@@ -9,6 +9,7 @@ message LoginRequest {
 
 message LoginResponse {
   string token= 1;
+  string user = 2;
 }
 
 

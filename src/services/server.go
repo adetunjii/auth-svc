@@ -36,6 +36,7 @@ func Start() {
 	}
 
 	go pd.SubscribeToLoginQueue()
+	go pd.SubscribeToRoleQueue()
 
 	listen, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0%v", PORT))
 	if err != nil {
