@@ -105,12 +105,13 @@ func (s *Server) Login(ctx context.Context, request *auth.LoginRequest) (*auth.L
 		roleID = append(roleID, roles)
 	}
 
+	//, _ := metadata.FromIncomingContext(ctx)
 	activities := &models.Activities{
-		ID:       uuid.New().String(),
-		UserID:   user.ID,
-		Token:    tokenStr,
-		Time:     time.Now(),
-		DeviceIP: os.Getpid(),
+		ID:     uuid.New().String(),
+		UserID: user.ID,
+		Token:  tokenStr,
+		Time:   time.Now(),
+		Device: string(rune(os.Getpid())),
 	}
 
 	err = s.DB.SaveActivities(activities)
@@ -122,6 +123,5 @@ func (s *Server) Login(ctx context.Context, request *auth.LoginRequest) (*auth.L
 		Token: tokenStr,
 		Roles: roleID,
 	}
-
 	return response, nil
 }

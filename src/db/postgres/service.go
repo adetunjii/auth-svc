@@ -12,6 +12,9 @@ func (postgresDB *PostgresDB) SaveActivities(activities *models.Activities) erro
 	return err
 }
 
-func (postgresDB *PostgresDB) DeleteActivities(activities *models.Activities) error {
-	return nil
+func (postgresDB *PostgresDB) DeleteActivities(userID string) error {
+	helpers.LogEvent("INFO", fmt.Sprintf("deleting user activities with user_id :%s", userID))
+	interest := &models.Activities{}
+	err := postgresDB.DB.Where("user_id = ?", userID).Delete(interest).Error
+	return err
 }

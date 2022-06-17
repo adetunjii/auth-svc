@@ -4,7 +4,7 @@ import "dh-backend-auth-sv/src/models"
 
 type DB interface {
 	SaveActivities(activities *models.Activities) error
-	DeleteActivities(activities *models.Activities) error
+	DeleteActivities(userID string) error
 }
 
 type RedisCache interface {
