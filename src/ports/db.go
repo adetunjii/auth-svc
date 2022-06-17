@@ -11,5 +11,5 @@ type RedisCache interface {
 	GetSubChannel(key string) *models.User
 	SaveSubChannel(key string, channel *models.User) error
 	SaveRoleChannel(key string, channel []byte) error
-	GetRoleChannels(key string) []*models.UserRole
+	GetRoleChannels(key string) []models.UserRole
 }

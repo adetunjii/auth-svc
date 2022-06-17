@@ -54,7 +54,7 @@ func Start() {
 
 	// graceful shutdown
 	go func() {
-		fmt.Println("starting services ...")
+		fmt.Printf("service started on port: %s", PORT)
 		if err := ser.Serve(listen); err != nil {
 			log.Fatalf("failed to serve: %v", err)
 		}

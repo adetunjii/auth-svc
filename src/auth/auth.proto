@@ -7,9 +7,14 @@ message LoginRequest {
    string password = 2;
 }
 
+message  Role {
+  string user_id = 1;
+  string role_id = 2;
+}
+
 message LoginResponse {
   string token= 1;
-  string user = 2;
+  repeated Role roles = 2;
 }
 
 

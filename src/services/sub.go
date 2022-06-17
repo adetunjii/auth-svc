@@ -100,8 +100,8 @@ func (s *Server) SubscribeToLoginQueue() {
 			}
 			log.Printf("%v", user)
 			log.Println(err)
-
 		}
+
 	}()
 
 	if err != nil {

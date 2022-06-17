@@ -4,15 +4,17 @@ import (
 	"crypto/rsa"
 	"dh-backend-auth-sv/src/auth"
 	"dh-backend-auth-sv/src/helpers"
+	"dh-backend-auth-sv/src/models"
 	"dh-backend-auth-sv/src/ports"
 	rabbitMQ2 "dh-backend-auth-sv/src/rabbitMQ"
-	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/google/uuid"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log"
+	"os"
 	"strings"
 	"time"
 )
@@ -92,18 +94,34 @@ func (s *Server) Login(ctx context.Context, request *auth.LoginRequest) (*auth.L
 		return nil, err
 	}
 
-	userM, err := json.Marshal(user)
-	if err != nil {
-		log.Println(err)
-	}
+	var roleID []*auth.Role
+	userRoles := s.RedisCache.GetRoleChannels("roles")
 
-	userRoles := s.RedisCache.GetRoleChannels("role")
 	for _, role := range userRoles {
-		log.Println(role)
+		roles := &auth.Role{
+			UserId: role.UserID,
+			RoleId: role.RoleID,
+		}
+		roleID = append(roleID, roles)
 	}
 
-	return &auth.LoginResponse{
+	activities := &models.Activities{
+		ID:       uuid.New().String(),
+		UserID:   user.ID,
+		Token:    tokenStr,
+		Time:     time.Now(),
+		DeviceIP: os.Getpid(),
+	}
+
+	err = s.DB.SaveActivities(activities)
+	if err != nil {
+		log.Printf("err %s", err)
+	}
+
+	response := &auth.LoginResponse{
 		Token: tokenStr,
-		User:  string(userM),
-	}, nil
+		Roles: roleID,
+	}
+
+	return response, nil
 }

@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"dh-backend-auth-sv/src/models"
 	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -30,6 +31,11 @@ func (postgresDB *PostgresDB) Init() {
 	}
 
 	postgresDB.DB = db
+
+	err = db.AutoMigrate(models.ActivityRoles{}, &models.Activities{})
+	if err != nil {
+		log.Printf("Error %s", err)
+	}
 
 	if err != nil {
 		log.Println("unable to create role.", err.Error())

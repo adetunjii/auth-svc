@@ -87,7 +87,12 @@ func (s *Server) SubscribeToRoleQueue() {
 		for d := range msgs {
 			log.Printf("our consumer received a message from: %v", os.Getpid())
 			log.Printf("Received a message: %s", d.Body)
+			//var user []*models.UserRole
+			//err := json.Unmarshal(d.Body, &user)
 
+			if err != nil {
+				log.Fatalf("error%v", err)
+			}
 			err = s.RedisCache.SaveRoleChannel("roles", d.Body)
 			if err != nil {
 				return
