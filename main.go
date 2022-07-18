@@ -1,7 +1,7 @@
 package main
 
 import (
-	"dh-backend-auth-sv/src/services"
+	"dh-backend-auth-sv/internal/services"
 	"github.com/joho/godotenv"
 	"log"
 )

@@ -1,0 +1,69 @@
+syntax = "proto3";
+option go_package = "internal/proto";
+package auth;
+
+message LoginRequest {
+   string email = 1;
+   string password = 2;
+}
+message LoginResponse {
+  string token= 1;
+}
+
+message RegisterRequest {
+  string firstName = 1;
+  string lastName = 2;
+  string email = 3;
+  string phoneNumber = 4;
+  string password = 5;
+  string country = 6;
+}
+
+message RegisterResponse {
+  string message= 1;
+  string userReference = 2;}
+
+message InitEmailVerificationRequest {
+  string email = 1;
+}
+
+message InitEmailVerificationResponse {
+  string message = 1;
+  string requestId = 2;
+}
+
+message InitPhoneVerificationRequest {
+  string phone = 1;
+}
+
+message InitPhoneVerificationResponse {
+  string message = 1;
+}
+
+message EmailVerificationRequest {
+  string requestID = 1;
+  string otp = 2;
+  string email = 3;
+}
+
+message EmailVerificationResponse {
+  string message = 1;
+}
+
+
+message LogoutRequest {
+  string user_id = 1;
+}
+
+message LogoutResponse {
+  string message = 1;
+}
+
+service AuthService{
+  rpc Login(LoginRequest) returns (LoginResponse) {}
+  rpc Register(RegisterRequest) returns (RegisterResponse) {}
+  rpc InitEmailVerification(InitEmailVerificationRequest) returns (InitEmailVerificationResponse) {}
+  rpc InitPhoneVerification(InitPhoneVerificationRequest) returns (InitPhoneVerificationResponse) {}
+  rpc VerifyEmail(EmailVerificationRequest) returns (EmailVerificationResponse) {}
+  rpc Logout (LogoutRequest) returns (LogoutResponse){}
+}

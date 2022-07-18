@@ -19,7 +19,7 @@ require (
 )
 
 require (
-	github.com/go-redis/redis/v8 v8.11.5
+	github.com/go-redis/redis/v8 v8.11.2
 	github.com/google/uuid v1.1.2
 	github.com/rabbitmq/amqp091-go v1.3.4
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2
