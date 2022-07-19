@@ -1,8 +1,6 @@
 ci_access:
   groups:
     - id: dh-go-backend
-  projects:
-    - id: dh-go-backend/dh-auth-service
     
   # #- id: gitlab-org/cluster-integration/gitlab-agent
   # - id: dh-go-backend/dh-backend/dh-backend-user-sv
