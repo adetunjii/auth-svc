@@ -16,7 +16,9 @@ message RegisterRequest {
   string email = 3;
   string phoneNumber = 4;
   string password = 5;
-  string country = 6;
+  string address = 6;
+  string state = 7;
+  string country = 8;
 }
 
 message RegisterResponse {
@@ -49,7 +51,6 @@ message EmailVerificationRequest {
 message EmailVerificationResponse {
   string message = 1;
 }
-
 
 message LogoutRequest {
   string user_id = 1;

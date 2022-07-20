@@ -12,7 +12,9 @@ message User {
   string email = 3;
   string phone = 4;
   string password = 5;
-  string country = 6;
+  string address = 6;
+  string state = 7;
+  string country = 8;
 }
 
 message UpdateUserInformation {
@@ -24,8 +26,6 @@ message UpdateUserInformation {
   string country = 6;
   string apartment_no = 7;
 }
-
-
 
 //Getting a single user details by email
 message GetUserDetailsByEmailRequest{

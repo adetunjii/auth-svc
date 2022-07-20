@@ -15,6 +15,8 @@ func (s *Server) Register(ctx context.Context, request *proto.RegisterRequest) (
 		Email:     request.GetEmail(),
 		Phone:     request.GetPhoneNumber(),
 		Password:  request.GetPassword(),
+		Address:   request.GetAddress(),
+		State:     request.GetState(),
 		Country:   request.GetCountry(),
 	}
 	res, err := s.UserService.CreateUser(ctx, &proto.CreateUserRequest{User: user})
