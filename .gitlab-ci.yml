@@ -23,9 +23,9 @@ workflow:
     
 stages:
 #    - lint
-    - build
+    #- build
     - build-push-docker
-    - deploy-staging
+    #- deploy-staging
 
 
 # lint:
