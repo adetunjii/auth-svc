@@ -31,7 +31,7 @@ RUN apk add ca-certificates
 WORKDIR /app
 
 
-COPY user-sv /app/go-app
+COPY auth-sv /app/go-app
 
 # Copy env File
 # COPY .env.example .env
