@@ -59,7 +59,7 @@ compile:
       - ls
     artifacts:
       paths:
-        - user-sv
+        - auth-sv
 
 
 # coverage:
