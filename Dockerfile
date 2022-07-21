@@ -27,13 +27,14 @@ RUN apk add ca-certificates
 
 #COPY --from=build_base /tmp/go-sample-app/checklos /app/go-app
 
-COPY user-sv /app/go-app
-
 # Set the Current Working Directory inside the container
 WORKDIR /app
 
+
+COPY user-sv /app/go-app
+
 # Copy env File
-COPY .env.example .env
+# COPY .env.example .env
 
 # This container exposes port 8081 to the outside world
 EXPOSE 8081
