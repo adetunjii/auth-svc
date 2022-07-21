@@ -55,7 +55,8 @@ compile:
       - go mod tidy
       - ls
       - cp .env.example .env
-      - go build -race -o user-sv
+      - go build -race -o auth-sv
+      - ls
     artifacts:
       paths:
         - user-sv
