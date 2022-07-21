@@ -53,10 +53,8 @@ compile:
     extends: .go-cache
     script:
       - go mod tidy
-      - ls
       - cp .env.example .env
       - go build -race -o auth-sv
-      - ls
     artifacts:
       paths:
         - auth-sv
@@ -100,6 +98,7 @@ build-push-docker-image-job:
         tag=":$CI_COMMIT_REF_SLUG"
         echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
       fi
+    - ls
     - docker build --pull -t "$CS_DEFAULT_BRANCH_IMAGE" .
     - docker push "$CS_DEFAULT_BRANCH_IMAGE"
 
