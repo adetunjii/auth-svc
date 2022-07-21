@@ -31,13 +31,13 @@ RUN apk add ca-certificates
 WORKDIR /app
 
 
-COPY auth-sv /app/go-app
+COPY auth-sv /app/auth-sv
 
 # Copy env File
 # COPY .env.example .env
 
 # This container exposes port 8081 to the outside world
-EXPOSE 8081
+EXPOSE 50092
 
 # Run the binary program produced by `go install`
-CMD ["./go-app"]
+CMD ["./auth-sv"]
