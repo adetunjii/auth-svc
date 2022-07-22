@@ -30,6 +30,8 @@ COPY --from=build_base /tmp/go-sample-app/auth-sv /app/go-app
 # Set the Current Working Directory inside the container
 WORKDIR /app
 
+COPY .env.example .env
+
 # This container exposes port 8081 to the outside world
 EXPOSE 50092
 
