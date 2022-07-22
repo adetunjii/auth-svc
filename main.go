@@ -2,15 +2,15 @@ package main
 
 import (
 	"dh-backend-auth-sv/internal/services"
-	//"github.com/joho/godotenv"
+	"github.com/joho/godotenv"
 	"log"
 )
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	//if err := godotenv.Load(); err != nil {
-	//	log.Printf("Error loading .env with godotenv: %s", err)
-	//}
+	if err := godotenv.Load(); err != nil {
+		log.Printf("Error loading .env with godotenv: %s", err)
+	}
 
 	services.Start()
 }
