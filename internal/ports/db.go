@@ -14,6 +14,6 @@ type RedisCache interface {
 	SaveSubChannel(key string, channel *models.User) error
 	SaveRoleChannel(key string, channel []byte) error
 	GetRoleChannels(key string) []models.UserRole
-	SaveOTP(key string, value any) error
-	GetOTP(key string) (*models.EmailVerification, error)
+	SaveOTP(key string, otpType string, value any) error
+	GetOTP(key string, otpType string) (*models.EmailVerification, error)
 }

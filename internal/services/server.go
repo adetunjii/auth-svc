@@ -5,14 +5,15 @@ import (
 	"dh-backend-auth-sv/internal/db/rediscache"
 	"dh-backend-auth-sv/internal/proto"
 	"fmt"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-	_ "google.golang.org/grpc/reflection"
 	"log"
 	"net"
 	"os"
 	"os/signal"
 	"time"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	_ "google.golang.org/grpc/reflection"
 )
 
 func Start() {
@@ -33,7 +34,8 @@ func Start() {
 
 	// connect to user service via gRPC
 	// TODO: introduce service discovery here
-	conn, err := grpc.Dial("localhost:50092", grpc.WithInsecure())
+	conn, err := grpc.Dial(os.Getenv("USER_SERVICE_URL"), grpc.WithInsecure())
+	fmt.Println(os.Getenv("USER_SERVICE_URL"))
 	if err != nil {
 		log.Printf("cannot connect to user service: %v", err)
 	}
@@ -65,6 +67,8 @@ func Start() {
 	// register services
 	proto.RegisterAuthServiceServer(ser, pd)
 	reflection.Register(ser) // register reflection service on gRPC services
+
+	log.Printf("server is running on port %v...", PORT)
 
 	// graceful shutdown
 	go func() {

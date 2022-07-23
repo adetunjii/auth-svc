@@ -4,9 +4,10 @@ import (
 	"dh-backend-auth-sv/internal/models"
 	"encoding/json"
 	"fmt"
-	"golang.org/x/net/context"
 	"log"
 	"time"
+
+	"golang.org/x/net/context"
 )
 
 func (r *RedisCache) SaveSubChannel(key string, channel *models.User) error {
@@ -67,21 +68,26 @@ func (r *RedisCache) GetRoleChannels(key string) []models.UserRole {
 	return user
 }
 
-func (r *RedisCache) SaveOTP(key string, value any) error {
+func (r *RedisCache) SaveOTP(key string, otpType string, value any) error {
 	client := r.GetClient()
 	json, err := json.Marshal(value)
 	if err != nil {
 		return fmt.Errorf("error parsing value")
 	}
-	fmt.Println(key, string(json))
-	return client.Set(context.Background(), key, string(json), r.expires*10*time.Minute).Err()
+
+	redisKey := fmt.Sprintf("%s/%s", otpType, key)
+
+	return client.Set(context.Background(), redisKey, string(json), r.expires*10*time.Minute).Err()
 }
 
-func (r *RedisCache) GetOTP(key string) (*models.EmailVerification, error) {
+func (r *RedisCache) GetOTP(key string, otpType string) (*models.EmailVerification, error) {
 	client := r.GetClient()
 	//response := &services.EmailVerification{}
 	response := &models.EmailVerification{}
-	val, err := client.Get(context.Background(), key).Result()
+
+	redisKey := fmt.Sprintf("%s/%s", otpType, key)
+
+	val, err := client.Get(context.Background(), redisKey).Result()
 	if err != nil {
 		return response, err
 	}

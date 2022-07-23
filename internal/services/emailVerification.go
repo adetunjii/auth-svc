@@ -7,6 +7,7 @@ import (
 	"dh-backend-auth-sv/internal/proto"
 	"encoding/json"
 	"fmt"
+
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,6 +15,7 @@ import (
 
 func (s *Server) InitEmailVerification(ctx context.Context, request *proto.InitEmailVerificationRequest) (*proto.InitEmailVerificationResponse, error) {
 	email := request.GetEmail()
+	otpType := request.GetType()
 
 	getUserRequest := &proto.GetUserDetailsByEmailRequest{Email: email}
 	res, err := s.UserService.GetUserDetailsByEmail(ctx, getUserRequest)
@@ -43,7 +45,7 @@ func (s *Server) InitEmailVerification(ctx context.Context, request *proto.InitE
 
 	fmt.Println(requestId.String())
 	// store otp in cache for 10 minutes using requestId as the key
-	if err := s.RedisCache.SaveOTP(requestId.String(), ev); err != nil {
+	if err := s.RedisCache.SaveOTP(requestId.String(), otpType, ev); err != nil {
 		helpers.LogEvent("ERROR", fmt.Sprintf("failed to save otp to redis: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to save otp")
 	}
@@ -56,8 +58,9 @@ func (s *Server) VerifyEmail(ctx context.Context, request *proto.EmailVerificati
 	email := request.GetEmail()
 	otp := request.GetOtp()
 	requestId := request.GetRequestID()
+	otpType := request.GetType()
 
-	data, err := s.RedisCache.GetOTP(requestId)
+	data, err := s.RedisCache.GetOTP(requestId, otpType.String())
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "otp has expired, please try again!")
 	}

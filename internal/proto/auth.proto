@@ -2,12 +2,15 @@ syntax = "proto3";
 option go_package = "internal/proto";
 package auth;
 
+
+
 message LoginRequest {
    string email = 1;
    string password = 2;
 }
 message LoginResponse {
-  string token= 1;
+  string message = 1;
+  string requestId = 2;
 }
 
 message RegisterRequest {
@@ -23,15 +26,22 @@ message RegisterRequest {
 
 message RegisterResponse {
   string message= 1;
-  string userReference = 2;}
+  string userReference = 2;
+}
 
 message InitEmailVerificationRequest {
   string email = 1;
+  string type = 2;
 }
 
 message InitEmailVerificationResponse {
   string message = 1;
   string requestId = 2;
+  enum OtpType {
+    LOGIN = 0;
+    REG = 1;
+  }
+  OtpType type = 3;
 }
 
 message InitPhoneVerificationRequest {
@@ -45,7 +55,27 @@ message InitPhoneVerificationResponse {
 message EmailVerificationRequest {
   string requestID = 1;
   string otp = 2;
-  string email = 3;
+  string email = 3; 
+  enum OtpType {
+    LOGIN = 0;
+    REG = 1;
+  }
+  OtpType type = 4;
+}
+
+message VerifyLoginRequest {
+  string email = 1;
+  string requestId = 2;
+  string otp = 3;
+  enum OtpType {
+    LOGIN = 0;
+    REG = 1;
+  }
+  OtpType type = 4;
+}
+
+message VerifyLoginResponse {
+  string token = 1;
 }
 
 message EmailVerificationResponse {
@@ -66,5 +96,6 @@ service AuthService{
   rpc InitEmailVerification(InitEmailVerificationRequest) returns (InitEmailVerificationResponse) {}
   rpc InitPhoneVerification(InitPhoneVerificationRequest) returns (InitPhoneVerificationResponse) {}
   rpc VerifyEmail(EmailVerificationRequest) returns (EmailVerificationResponse) {}
+  rpc VerifyLogin(VerifyLoginRequest) returns (VerifyLoginResponse) {}
   rpc Logout (LogoutRequest) returns (LogoutResponse){}
 }

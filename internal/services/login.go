@@ -9,14 +9,11 @@ import (
 	"dh-backend-auth-sv/internal/proto"
 	"encoding/json"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
+	"strings"
+
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"log"
-	"os"
-	"strings"
-	"time"
 )
 
 type Server struct {
@@ -76,97 +73,36 @@ func (s *Server) Login(ctx context.Context, request *proto.LoginRequest) (*proto
 	err = json.Unmarshal(res.GetResponse(), user)
 	if err != nil {
 		fmt.Println(err)
-		helpers.LogEvent("ERROR", fmt.Sprintf("cannot unmarshal user"))
+		helpers.LogEvent("ERROR", fmt.Sprintf("cannot unmarshal user %v", err))
 		return nil, status.Errorf(codes.Internal, "cannot process user info")
 	}
-
-	fmt.Println(user.Role.Title)
-	//userRoleRequest := proto.GetUserRolesRequest{}
-	//userRoles := s.UserService.GetUserRoles(ctx)
-
-	//err = rabbitMQ2.PublishToLoginQueue(hashedPassword, email)
-	//if err != nil {
-	//	return nil, err
-	//}
-
-	//user := s.RedisCache.GetSubChannel(email)
-	//if user.Email == "" {
-	//	return nil, status.Error(codes.NotFound, "User not found")
-	//}
 
 	if !helpers.CheckPasswordHash(password, []byte(user.HashedPassword)) {
 		return nil, status.Error(codes.NotFound, "user password incorrect")
 	}
 
-	now := time.Now()
-	exp := now.Add(time.Hour * 24)
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": map[string]string{
-			"userId": user.ID,
-			"roleId": user.RoleID,
-		},
-		"aud": "proto-service",
-		"iss": "proto-service",
-		"exp": exp.Unix(),
-		"iat": now.Unix(),
-		"nbf": now.Unix(),
-	})
-	tokenStr, err := token.SignedString([]byte(email))
+	randomOtp := "123456"
+	requestId, err := uuid.NewRandom()
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, err.Error())
-	}
-	//
-	//err = rabbitMQ2.PublishToRoleQueue(user.ID)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//var roleID []*proto.Role
-	//userRoles := s.RedisCache.GetRoleChannels("roles")
-	//
-	//for _, role := range userRoles {
-	//	roles := &proto.Role{
-	//		UserId: role.UserID,
-	//		RoleId: role.RoleID,
-	//	}
-	//	roleID = append(roleID, roles)
-	//}
-
-	//, _ := metadata.FromIncomingContext(ctx)
-	activities := &models.Activities{
-		ID:     uuid.New().String(),
-		UserID: user.ID,
-		Token:  tokenStr,
-		Time:   time.Now(),
-		Device: string(rune(os.Getpid())),
+		helpers.LogEvent("ERROR", "failed to create requestId for email verification")
+		return nil, status.Errorf(codes.Internal, "failed to create requestId for email verification")
 	}
 
-	err = s.DB.SaveActivities(activities)
-	if err != nil {
-		log.Printf("err %s", err)
+	ev := &models.EmailVerification{
+		Otp:   randomOtp,
+		Email: user.Email,
 	}
 
-	//var roleID []*proto.Roles
-	//roles := &proto.Roles{
-	//	UserId: user.ID,
-	//	RoleId: user,
-	//}
-	//
-	//var userRole proto.Role
-	//
-	//fmt.Println(user.Roles)
-	//
-	//for _, role := range user.Roles {
-	//	fmt.Println(role.ID, role.Title)
-	//	userRoles = append(userRoles, &proto.Role{
-	//		RoleId: role.ID,
-	//		Title:  role.Title,
-	//	})
-	//}
+	fmt.Println(requestId.String())
+	// store otp in cache for 10 minutes using requestId as the key
+	if err := s.RedisCache.SaveOTP(requestId.String(), "LOGIN", ev); err != nil {
+		helpers.LogEvent("ERROR", fmt.Sprintf("failed to save otp to redis: %v", err))
+		return nil, status.Errorf(codes.Internal, "failed to save otp")
+	}
 
 	response := &proto.LoginResponse{
-		Token: tokenStr,
+		Message:   "An otp has been sent to your email",
+		RequestId: requestId.String(),
 	}
 	return response, nil
 }

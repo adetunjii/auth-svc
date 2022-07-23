@@ -23,6 +23,7 @@ type AuthServiceClient interface {
 	InitEmailVerification(ctx context.Context, in *InitEmailVerificationRequest, opts ...grpc.CallOption) (*InitEmailVerificationResponse, error)
 	InitPhoneVerification(ctx context.Context, in *InitPhoneVerificationRequest, opts ...grpc.CallOption) (*InitPhoneVerificationResponse, error)
 	VerifyEmail(ctx context.Context, in *EmailVerificationRequest, opts ...grpc.CallOption) (*EmailVerificationResponse, error)
+	VerifyLogin(ctx context.Context, in *VerifyLoginRequest, opts ...grpc.CallOption) (*VerifyLoginResponse, error)
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
 }
 
@@ -79,6 +80,15 @@ func (c *authServiceClient) VerifyEmail(ctx context.Context, in *EmailVerificati
 	return out, nil
 }
 
+func (c *authServiceClient) VerifyLogin(ctx context.Context, in *VerifyLoginRequest, opts ...grpc.CallOption) (*VerifyLoginResponse, error) {
+	out := new(VerifyLoginResponse)
+	err := c.cc.Invoke(ctx, "/auth.AuthService/VerifyLogin", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *authServiceClient) Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error) {
 	out := new(LogoutResponse)
 	err := c.cc.Invoke(ctx, "/auth.AuthService/Logout", in, out, opts...)
@@ -97,6 +107,7 @@ type AuthServiceServer interface {
 	InitEmailVerification(context.Context, *InitEmailVerificationRequest) (*InitEmailVerificationResponse, error)
 	InitPhoneVerification(context.Context, *InitPhoneVerificationRequest) (*InitPhoneVerificationResponse, error)
 	VerifyEmail(context.Context, *EmailVerificationRequest) (*EmailVerificationResponse, error)
+	VerifyLogin(context.Context, *VerifyLoginRequest) (*VerifyLoginResponse, error)
 	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
@@ -119,6 +130,9 @@ func (UnimplementedAuthServiceServer) InitPhoneVerification(context.Context, *In
 }
 func (UnimplementedAuthServiceServer) VerifyEmail(context.Context, *EmailVerificationRequest) (*EmailVerificationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method VerifyEmail not implemented")
+}
+func (UnimplementedAuthServiceServer) VerifyLogin(context.Context, *VerifyLoginRequest) (*VerifyLoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VerifyLogin not implemented")
 }
 func (UnimplementedAuthServiceServer) Logout(context.Context, *LogoutRequest) (*LogoutResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Logout not implemented")
@@ -226,6 +240,24 @@ func _AuthService_VerifyEmail_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_VerifyLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifyLoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).VerifyLogin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.AuthService/VerifyLogin",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).VerifyLogin(ctx, req.(*VerifyLoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AuthService_Logout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LogoutRequest)
 	if err := dec(in); err != nil {
@@ -270,6 +302,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "VerifyEmail",
 			Handler:    _AuthService_VerifyEmail_Handler,
+		},
+		{
+			MethodName: "VerifyLogin",
+			Handler:    _AuthService_VerifyLogin_Handler,
 		},
 		{
 			MethodName: "Logout",
