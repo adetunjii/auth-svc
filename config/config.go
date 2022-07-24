@@ -1,102 +1,70 @@
 package config
 
-// import (
-// 	"dh-backend-auth-sv/internal/db/postgres"
-// 	"dh-backend-auth-sv/internal/db/rediscache"
-// 	"dh-backend-auth-sv/internal/helpers"
-// 	"fmt"
-// 	"os"
-// 	"time"
+import (
+	"dh-backend-auth-sv/internal/db/postgres"
+	"dh-backend-auth-sv/internal/db/rediscache"
+	"dh-backend-auth-sv/internal/helpers"
+	"time"
+)
 
-// 	"github.com/spf13/viper"
-// )
+type Config struct {
+	DbHost         string `mapstructure:"DB_HOST" json:"dbHost"`
+	DbPort         string `mapstructure:"DB_PORT" json:"dbPort"`
+	DbUser         string `mapstructure:"DB_USER" json:"dbUser"`
+	DbName         string `mapstructure:"DB_NAME" json:"dbName"`
+	DbPassword     string `mapstructure:"DB_PASSWORD" json:"dbPassword"`
+	DbUrl          string `mapstructure:"DB_URL" json:"dbUrl"`
+	RabbitMQHost   string `mapstructure:"RABBITMQ_HOST" json:"rabbitMQHost"`
+	RabbitMQPort   string `mapstructure:"RABBITMQ_PORT" json:"rabbitMQPort"`
+	RabbitMQUser   string `mapstructure:"RABBITMQ_USER" json:"rabbitMQUser"`
+	RabbitMQPass   string `mapstructure:"RABBITMQ_PASS" json:"rabbitMQPass"`
+	CloudAMQPUrl   string `mapstructure:"CLOUDAMQP_URL" json:"cloudAMQPUrl"`
+	RedisHost      string `mapstructure:"REDIS_HOST" json:"redisHost"`
+	RedisPort      string `mapstructure:"REDIS_PORT" json:"redisPort"`
+	RedisPassword  string `mapstructure:"REDIS_PASSWORD" json:"redisPassword"`
+	AwsSecretID    string `mapstructure:"AWS_SECRET_ID" json:"awsSecretID"`
+	AwsSecretKey   string `mapstructure:"AWS_SECRET_KEY" json:"awsSecretKey"`
+	AwsRegion      string `mapstructure:"AWS_REGION" json:"awsRegion"`
+	UserServiceUrl string `mapstructure:"USER_SERVICE_URL" json:"userServiceUrl"`
+}
 
-// type Config struct {
-// 	DbHost        string `mapstructure:"DB_HOST"`
-// 	DbPort        string `mapstructure:"DB_PORT"`
-// 	DbUser        string `mapstructure:"DB_USER"`
-// 	DbName        string `mapstructure:"DB_NAME"`
-// 	DbPassword    string `mapstructure:"DB_PASSWORD"`
-// 	DbUrl         string `mapstructure:"DB_URL"`
-// 	RabbitMQHost  string `mapstructure:"RABBITMQ_HOST"`
-// 	RabbitMQPort  string `mapstructure:"RABBITMQ_PORT"`
-// 	RabbitMQUser  string `mapstructure:"RABBITMQ_USER"`
-// 	RabbitMQPass  string `mapstructure:"RABBITMQ_PASS"`
-// 	CloudAMQPUrl  string `mapstructure:"CLOUDAMQP_URL"`
-// 	RedisHost     string `mapstructure:"REDIS_HOST"`
-// 	RedisPort     string `mapstructure:"REDIS_PORT"`
-// 	RedisPassword string `mapstructure:"REDIS_PASSWORD"`
-// 	AwsSecretID   string `mapstructure:"AWS_SECRET_ID"`
-// 	AwsSecretKey  string `mapstructure:"AWS_SECRET_KEY"`
-// 	AwsRegion     string `mapstructure:"AWS_REGION"`
-// }
+type Service struct {
+	DB    *postgres.PostgresDB
+	Redis *rediscache.Redis
+}
 
-// type Service struct {
-// 	DB    *postgres.PostgresDB
-// 	Redis *rediscache.RedisCache
-// }
+func LoadConfig() *Service {
 
-// func LoadConfig() *Service {
+	services := &Service{}
 
-// 	config := &Config{}
+	config, err := VaultSecrets()
+	if err != nil {
+		helpers.LogEvent("ERROR", "couldn't load secrets")
+		helpers.FailOnError(err, "couldn't load secrets")
+	}
 
-// 	services := &Service{
-// 		DB:    nil,
-// 		Redis: nil,
-// 		// RabbitMQ: nil,
-// 	}
+	dbConfig := &postgres.Config{
+		Host:        config.DbHost,
+		Port:        config.DbPort,
+		User:        config.DbUser,
+		Name:        config.DbName,
+		Password:    config.DbPassword,
+		DatabaseUrl: config.DbUrl,
+	}
 
-// 	consulUrl := os.Getenv("CONSUL_URL")
-// 	consulKey := os.Getenv("CONSUL_KEY")
+	db := postgres.New(dbConfig)
 
-// 	remoteViper := viper.New()
-// 	remoteViper.AddRemoteProvider("consul", consulUrl, consulKey)
-// 	remoteViper.SetConfigType("json")
+	services.DB = db
 
-// 	if err := remoteViper.ReadRemoteConfig(); err != nil {
-// 		helpers.LogEvent("ERROR", fmt.Sprintf("%s", err))
-// 		helpers.FailOnError(err, "cannot read remote config")
-// 	}
+	redisConfig := &rediscache.Config{
+		Host:     config.RedisHost,
+		Password: config.RedisPassword,
+		Expiry:   time.Second * 15,
+	}
 
-// 	err := remoteViper.Unmarshal(config)
-// 	if err != nil {
-// 		helpers.LogEvent("ERROR", fmt.Sprintf("%s", err))
-// 		helpers.FailOnError(err, "cannot load remote config")
-// 	}
+	redis := rediscache.New(redisConfig)
 
-// 	dbConfig := &postgres.Config{
-// 		Host:        config.DbHost,
-// 		Port:        config.DbPort,
-// 		User:        config.DbUser,
-// 		Password:    config.DbPassword,
-// 		Name:        config.DbName,
-// 		DatabaseUrl: config.DbUrl,
-// 	}
+	services.Redis = redis
 
-// 	db := postgres.New(dbConfig)
-
-// 	services.DB = db
-
-// 	// rabbitMqConfig := rabbitMQ.Config{
-// 	// 	Host:     config.RabbitMQHost,
-// 	// 	Port:     config.RabbitMQPort,
-// 	// 	User:     config.RabbitMQUser,
-// 	// 	Password: config.RabbitMQPass,
-// 	// 	Url:      config.CloudAMQPUrl,
-// 	// }
-
-// 	// rabbitMq := rabbitMQ.New(rabbitMqConfig)
-
-// 	// services.RabbitMQ = rabbitMq
-
-// 	redisConfig := rediscache.Config{
-// 		Host:     config.RedisHost,
-// 		Password: config.RedisPassword,
-// 		Expiry:   15 * time.Second,
-// 	}
-
-// 	redis := rediscache.New(redisConfig)
-
-// 	services.Redis = redis
-// 	return services
-// }
+	return services
+}

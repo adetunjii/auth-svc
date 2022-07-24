@@ -33,7 +33,7 @@ func (s *Server) VerifyLogin(ctx context.Context, req *proto.VerifyLoginRequest)
 	}
 
 	if email != data.Email {
-		return nil, status.Errorf(codes.InvalidArgument, "email does not match")
+		return nil, status.Errorf(codes.InvalidArgument, "invalid email")
 	}
 
 	userRequest := proto.GetUserDetailsByEmailRequest{

@@ -13,6 +13,7 @@ require (
 	github.com/joho/godotenv v1.4.0
 	github.com/pkg/errors v0.9.1
 	github.com/rabbitmq/amqp091-go v1.4.0
+	github.com/spf13/viper v1.12.0
 	github.com/stretchr/testify v1.8.0
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
 	golang.org/x/net v0.0.0-20220722155237-a158d28d115b
@@ -23,6 +24,17 @@ require (
 )
 
 require (
+	github.com/magiconair/properties v1.8.6 // indirect
+	github.com/pelletier/go-toml v1.9.5 // indirect
+	github.com/spf13/afero v1.8.2 // indirect
+	github.com/spf13/cast v1.5.0 // indirect
+	github.com/spf13/jwalterweatherman v1.1.0 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/subosito/gotenv v1.3.0 // indirect
+	gopkg.in/ini.v1 v1.66.4 // indirect
+)
+
+require (
 	github.com/armon/go-metrics v0.4.0 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
@@ -30,7 +42,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fatih/color v1.13.0 // indirect
-	github.com/frankban/quicktest v1.14.3 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
@@ -40,7 +51,6 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-hclog v1.2.1 // indirect

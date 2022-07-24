@@ -10,24 +10,23 @@ import (
 	"golang.org/x/net/context"
 )
 
-func (r *RedisCache) SaveSubChannel(key string, channel *models.User) error {
-	client := r.GetClient()
+func (r *Redis) SaveSubChannel(key string, channel *models.User) error {
+
 	json, err := json.Marshal(channel)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	err = client.Set(context.Background(), key, string(json), r.expires*time.Minute*5).Err()
+	err = r.client.Set(context.Background(), key, string(json), r.expiry*time.Minute*5).Err()
 	if err != nil {
 		return err
 	}
-	_, err = client.Ping(context.Background()).Result()
+	_, err = r.client.Ping(context.Background()).Result()
 	return err
 }
 
-func (r *RedisCache) GetSubChannel(key string) *models.User {
-	client := r.GetClient()
-	val, err := client.Get(context.Background(), key).Result()
+func (r *Redis) GetSubChannel(key string) *models.User {
+	val, err := r.client.Get(context.Background(), key).Result()
 	if err != nil {
 		log.Printf("error getting channel from cache: %v", err)
 	}
@@ -41,20 +40,18 @@ func (r *RedisCache) GetSubChannel(key string) *models.User {
 	return user
 }
 
-func (r *RedisCache) SaveRoleChannel(key string, channel []byte) error {
-	client := r.GetClient()
+func (r *Redis) SaveRoleChannel(key string, channel []byte) error {
 	log.Println(string(channel))
-	err := client.Set(context.Background(), key, string(channel), r.expires*time.Minute*5).Err()
+	err := r.client.Set(context.Background(), key, string(channel), r.expiry*time.Minute*5).Err()
 	if err != nil {
 		return err
 	}
-	_, err = client.Ping(context.Background()).Result()
+	_, err = r.client.Ping(context.Background()).Result()
 	return err
 }
 
-func (r *RedisCache) GetRoleChannels(key string) []models.UserRole {
-	client := r.GetClient()
-	val, err := client.Get(context.Background(), key).Result()
+func (r *Redis) GetRoleChannels(key string) []models.UserRole {
+	val, err := r.client.Get(context.Background(), key).Result()
 	if err != nil {
 		log.Printf("error getting channel from role cache: %v", err)
 	}
@@ -68,8 +65,7 @@ func (r *RedisCache) GetRoleChannels(key string) []models.UserRole {
 	return user
 }
 
-func (r *RedisCache) SaveOTP(key string, otpType string, value any) error {
-	client := r.GetClient()
+func (r *Redis) SaveOTP(key string, otpType string, value any) error {
 	json, err := json.Marshal(value)
 	if err != nil {
 		return fmt.Errorf("error parsing value")
@@ -77,17 +73,16 @@ func (r *RedisCache) SaveOTP(key string, otpType string, value any) error {
 
 	redisKey := fmt.Sprintf("%s/%s", otpType, key)
 
-	return client.Set(context.Background(), redisKey, string(json), r.expires*10*time.Minute).Err()
+	return r.client.Set(context.Background(), redisKey, string(json), 10*time.Minute).Err()
 }
 
-func (r *RedisCache) GetOTP(key string, otpType string) (*models.EmailVerification, error) {
-	client := r.GetClient()
+func (r *Redis) GetOTP(key string, otpType string) (*models.EmailVerification, error) {
 	//response := &services.EmailVerification{}
 	response := &models.EmailVerification{}
 
 	redisKey := fmt.Sprintf("%s/%s", otpType, key)
 
-	val, err := client.Get(context.Background(), redisKey).Result()
+	val, err := r.client.Get(context.Background(), redisKey).Result()
 	if err != nil {
 		return response, err
 	}

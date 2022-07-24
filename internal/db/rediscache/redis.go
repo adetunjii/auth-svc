@@ -1,50 +1,71 @@
 package rediscache
 
 import (
-	"dh-backend-auth-sv/internal/ports"
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"log"
-	"os"
 	"time"
 )
 
-type RedisCache struct {
-	host     string
-	password string
-	db       int
-	expires  time.Duration
+type Config struct {
+	Host     string
+	Db       int
+	Password string
+	Url      string
+	Expiry   time.Duration
 }
 
-func NewRedisCache(host string, password string, db int, expires time.Duration) ports.RedisCache {
-	fmt.Println(host, password, db)
-	return &RedisCache{
-		host:     host,
-		password: password,
-		db:       db,
-		expires:  expires,
+type Redis struct {
+	client *redis.Client
+	expiry time.Duration
+}
+
+func New(config *Config) *Redis {
+	redis := &Redis{
+		client: nil,
+		expiry: config.Expiry,
 	}
+
+	if err := redis.GetClient(config); err != nil {
+		log.Fatalf("connection to redis failed: %v", err)
+	}
+	return redis
 }
 
-func (r *RedisCache) GetClient() *redis.Client {
+func (r *Redis) GetClient(config *Config) error {
+	fmt.Println(config)
 	var redisURL *redis.Options
-
-	fmt.Println(r.host)
-
-	if os.Getenv("REDIS_URL") == "" {
+	if config.Url == "" {
 		redisURL = &redis.Options{
-			Addr:     fmt.Sprintf("%s:%s", os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT")),
-			Password: os.Getenv("REDIS_PASS"),
-			DB:       10,
+			Addr:     config.Host,
+			Password: config.Password,
+			DB:       config.Db,
 		}
 	} else {
 		var err error
-		redisURL, err = redis.ParseURL(os.Getenv("REDIS_URL"))
+		redisURL, err = redis.ParseURL(config.Url)
 		if err != nil {
-			log.Println(err)
+			return err
 		}
 	}
+	r.client = redis.NewClient(redisURL)
+	//defer r.CloseConnection()
 
-	fmt.Println(redisURL.Password)
-	return redis.NewClient(redisURL)
+	fmt.Println("connected to redis successfully...")
+	return nil
+}
+
+func (r *Redis) CloseConnection() error {
+	if r.client != nil {
+		return r.client.Close()
+	}
+	return nil
+}
+
+func (r *Redis) RestartConnection(config *Config) error {
+	if r.client != nil {
+		r.CloseConnection()
+	}
+
+	return r.GetClient(config)
 }

@@ -2,8 +2,10 @@ package config
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 
 	vault "github.com/hashicorp/vault/api"
 	"github.com/hashicorp/vault/api/auth/approle"
@@ -15,7 +17,6 @@ type VaultParameters struct {
 	approleRoleID       string
 	approleSecretIDFile string
 
-	// the locations / field names of our two secrets
 	apiKeyPath              string
 	apiKeyMountPath         string
 	apiKeyField             string
@@ -25,6 +26,35 @@ type VaultParameters struct {
 type Vault struct {
 	client     *vault.Client
 	parameters VaultParameters
+}
+
+func VaultSecrets() (*Config, error) {
+	vaultConfig := vault.DefaultConfig()
+	vaultConfig.Address = os.Getenv("VAULT_ADDR")
+
+	client, err := vault.NewClient(vaultConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	client.SetToken(os.Getenv("VAULT_AUTH_TOKEN"))
+
+	// Read a secret from the default mount path for KV v2 in dev mode, "secret"
+	secret, err := client.KVv2("secret").Get(context.Background(), os.Getenv("VAULT_SECRET_PATH"))
+	if err != nil {
+		log.Fatalf("unable to read secret: %v", err)
+	}
+
+	j, _ := json.Marshal(secret.Data)
+
+	config := &Config{}
+
+	err = json.Unmarshal(j, config)
+	if err != nil {
+		log.Fatalf("unable to parse secrets %v", err)
+	}
+
+	return config, nil
 }
 
 func NewVaultClient() {

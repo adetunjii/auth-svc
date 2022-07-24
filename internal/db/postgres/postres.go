@@ -6,39 +6,78 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
-	"os"
 )
+
+type Config struct {
+	Host        string `json:"host"`
+	Port        string `json:"port"`
+	User        string `json:"user"`
+	Name        string `json:"name"`
+	Password    string `json:"password"`
+	DatabaseUrl string `json:"url"`
+}
 
 type PostgresDB struct {
 	DB *gorm.DB
 }
 
-func (postgresDB *PostgresDB) Init() {
-	// using gorm to connect to db driver
+func New(config *Config) *PostgresDB {
+	db := &PostgresDB{
+		DB: nil,
+	}
+
+	if err := db.Connect(config); err != nil {
+		log.Fatalf("connection to db failed: %v", err)
+	}
+	return db
+}
+
+func (postgresDB *PostgresDB) Connect(config *Config) error {
+	fmt.Println(config)
+
 	var dns string
-	databaseUrl := os.Getenv("DATABASE_URL")
+	databaseUrl := config.DatabaseUrl
 	if databaseUrl == "" {
 		dns = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-			os.Getenv("DB_HOST"), os.Getenv("DB_PORT"),
-			os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
+			config.Host, config.Port, config.User, config.Password, config.Name)
 		fmt.Println(dns)
 	} else {
 		dns = databaseUrl
 	}
 	db, err := gorm.Open(postgres.Open(dns), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("failed to connect database: %v", err)
+		return err
 	}
 
 	postgresDB.DB = db
 
-	err = db.AutoMigrate(models.ActivityRoles{}, &models.Activities{})
+	//Migrate the schema
+	// TODO: undo comment
+	err = postgresDB.DB.AutoMigrate(&models.Role{}, &models.Interest{}, &models.User{}, &models.UserRole{})
 	if err != nil {
-		log.Printf("Error %s", err)
+		return err
 	}
 
-	if err != nil {
-		log.Println("unable to create role.", err.Error())
-	}
 	log.Println("Database Connected Successfully...")
+	return nil
+}
+
+func (postgresDB *PostgresDB) CloseConnection() error {
+	if postgresDB.DB != nil {
+		connection, err := postgresDB.DB.DB()
+		if err != nil {
+			return err
+		}
+
+		connection.Close()
+	}
+	return nil
+}
+
+func (postgresDB *PostgresDB) RestartConnection(config *Config) error {
+	if postgresDB.DB != nil {
+		postgresDB.CloseConnection()
+	}
+
+	return postgresDB.Connect(config)
 }

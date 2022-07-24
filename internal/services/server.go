@@ -1,19 +1,16 @@
 package services
 
 import (
-	"dh-backend-auth-sv/internal/db/postgres"
-	"dh-backend-auth-sv/internal/db/rediscache"
+	"dh-backend-auth-sv/config"
 	"dh-backend-auth-sv/internal/proto"
 	"fmt"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	_ "google.golang.org/grpc/reflection"
 	"log"
 	"net"
 	"os"
 	"os/signal"
-	"time"
-
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-	_ "google.golang.org/grpc/reflection"
 )
 
 func Start() {
@@ -24,13 +21,8 @@ func Start() {
 	if PORT == ":" {
 		PORT += "8080"
 	}
-	db := &postgres.PostgresDB{}
-	db.Init()
 
-	redisPass := os.Getenv("REDIS_PASS")
-	Addr := fmt.Sprintf("%s:%s", os.Getenv("REDIS_ADDR"), os.Getenv("REDIS_PORT"))
-	rediscache.NewRedisCache(Addr, redisPass, 10, 15*time.Second)
-	redisCache := &rediscache.RedisCache{}
+	services := config.LoadConfig()
 
 	// connect to user service via gRPC
 	// TODO: introduce service discovery here
@@ -46,8 +38,8 @@ func Start() {
 	userService := proto.NewUserServiceClient(conn)
 
 	pd := &Server{
-		DB:          db,
-		RedisCache:  redisCache,
+		DB:          services.DB,
+		RedisCache:  services.Redis,
 		UserService: userService,
 	}
 
