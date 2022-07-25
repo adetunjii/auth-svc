@@ -40,7 +40,6 @@ func (postgresDB *PostgresDB) Connect(config *Config) error {
 	if databaseUrl == "" {
 		dns = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 			config.Host, config.Port, config.User, config.Password, config.Name)
-		fmt.Println(dns)
 	} else {
 		dns = databaseUrl
 	}

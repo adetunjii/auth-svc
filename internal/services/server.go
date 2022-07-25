@@ -4,6 +4,7 @@ import (
 	"dh-backend-auth-sv/config"
 	"dh-backend-auth-sv/internal/proto"
 	"fmt"
+	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	_ "google.golang.org/grpc/reflection"
@@ -17,17 +18,19 @@ func Start() {
 	// Create a new services
 	//helpers.InitializeLogDir()
 
-	PORT := fmt.Sprintf(":%s", os.Getenv("PORT"))
+	PORT := fmt.Sprintf(":%s", viper.Get("PORT"))
 	if PORT == ":" {
 		PORT += "8080"
 	}
 
 	services := config.LoadConfig()
 
+	userServiceUrl := viper.Get("USER_SERVICE_URL")
+
 	// connect to user service via gRPC
 	// TODO: introduce service discovery here
-	conn, err := grpc.Dial(os.Getenv("USER_SERVICE_URL"), grpc.WithInsecure())
-	fmt.Println(os.Getenv("USER_SERVICE_URL"))
+	conn, err := grpc.Dial(fmt.Sprintf("%s", userServiceUrl), grpc.WithInsecure())
+
 	if err != nil {
 		log.Printf("cannot connect to user service: %v", err)
 	}
@@ -43,8 +46,8 @@ func Start() {
 		UserService: userService,
 	}
 
-	go pd.SubscribeToLoginQueue()
-	go pd.SubscribeToRoleQueue()
+	//go pd.SubscribeToLoginQueue()
+	//go pd.SubscribeToRoleQueue()
 
 	listen, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0%v", PORT))
 	if err != nil {

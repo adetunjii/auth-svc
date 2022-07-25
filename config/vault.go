@@ -4,11 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
-	"os"
-
 	vault "github.com/hashicorp/vault/api"
 	"github.com/hashicorp/vault/api/auth/approle"
+	"github.com/spf13/viper"
+	"log"
 )
 
 type VaultParameters struct {
@@ -29,18 +28,19 @@ type Vault struct {
 }
 
 func VaultSecrets() (*Config, error) {
+
 	vaultConfig := vault.DefaultConfig()
-	vaultConfig.Address = os.Getenv("VAULT_ADDR")
+	vaultConfig.Address = viper.GetString("VAULT_ADDR")
 
 	client, err := vault.NewClient(vaultConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	client.SetToken(os.Getenv("VAULT_AUTH_TOKEN"))
+	client.SetToken(viper.GetString("VAULT_AUTH_TOKEN"))
 
 	// Read a secret from the default mount path for KV v2 in dev mode, "secret"
-	secret, err := client.KVv2("secret").Get(context.Background(), os.Getenv("VAULT_SECRET_PATH"))
+	secret, err := client.KVv2("secret").Get(context.Background(), viper.GetString("VAULT_SECRET_PATH"))
 	if err != nil {
 		log.Fatalf("unable to read secret: %v", err)
 	}
@@ -55,49 +55,6 @@ func VaultSecrets() (*Config, error) {
 	}
 
 	return config, nil
-}
-
-func NewVaultClient() {
-	config := vault.DefaultConfig()
-
-	config.Address = "http://127.0.0.1:8200"
-
-	client, err := vault.NewClient(config)
-	if err != nil {
-		log.Fatalf("unable to initialize Vault client: %v", err)
-	}
-
-	// Authenticate
-	client.SetToken("dev-only-token")
-
-	secretData := map[string]interface{}{
-		"password": "Hashi123",
-	}
-
-	// Write a secret
-	_, err = client.KVv2("secrets").Put(context.Background(), "secret", secretData)
-	if err != nil {
-		log.Fatalf("unable to write secret: %v", err)
-	}
-
-	fmt.Println("Secret written successfully.")
-
-	// Read a secret from the default mount path for KV v2 in dev mode, "secret"
-	secret, err := client.KVv2("secrets").Get(context.Background(), "secret")
-	if err != nil {
-		log.Fatalf("unable to read secret: %v", err)
-	}
-
-	value, ok := secret.Data["password"].(string)
-	if !ok {
-		log.Fatalf("value type assertion failed: %T %#v", secret.Data["password"], secret.Data["password"])
-	}
-
-	if value != "Hashi123" {
-		log.Fatalf("unexpected password value %q retrieved from vault", value)
-	}
-
-	fmt.Println("Access granted!")
 }
 
 func NewVaultAppRoleClient(ctx context.Context, parameters VaultParameters) (*Vault, *vault.Secret, error) {
