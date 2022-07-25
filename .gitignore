@@ -1,2 +1,8 @@
+mock_*
+.vscode
 .idea
 .env
+testimg.png
+ds_store
+.DS_Store
+**.DS_Store
