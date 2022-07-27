@@ -2,7 +2,7 @@ syntax = "proto3";
 option go_package = "internal/proto";
 package auth;
 
-
+import "google/protobuf/empty.proto";
 
 message LoginRequest {
    string email = 1;
@@ -90,6 +90,17 @@ message LogoutResponse {
   string message = 1;
 }
 
+message Country {
+  int32 id = 1;
+  string name = 2;
+  string iso = 3;
+  string phoneCode = 4;
+}
+
+message GetAllCountryResponse {
+  repeated Country countries = 1;
+}
+
 service AuthService{
   rpc Login(LoginRequest) returns (LoginResponse) {}
   rpc Register(RegisterRequest) returns (RegisterResponse) {}
@@ -98,4 +109,5 @@ service AuthService{
   rpc VerifyEmail(EmailVerificationRequest) returns (EmailVerificationResponse) {}
   rpc VerifyLogin(VerifyLoginRequest) returns (VerifyLoginResponse) {}
   rpc Logout (LogoutRequest) returns (LogoutResponse){}
+  rpc GetAllCountries(google.protobuf.Empty) returns (GetAllCountryResponse) {}
 }

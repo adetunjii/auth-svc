@@ -18,3 +18,11 @@ func (postgresDB *PostgresDB) DeleteActivities(userID string) error {
 	err := postgresDB.DB.Where("user_id = ?", userID).Delete(interest).Error
 	return err
 }
+
+func (postgresDB *PostgresDB) GetAllCountries() ([]*models.Country, error) {
+	helpers.LogEvent("INFO", fmt.Sprintf("getting all countries"))
+
+	var country []*models.Country
+	err := postgresDB.DB.Find(&country).Error
+	return country, err
+}

@@ -7,6 +7,7 @@ import (
 type DB interface {
 	SaveActivities(activities *models.Activities) error
 	DeleteActivities(userID string) error
+	GetAllCountries() ([]*models.Country, error)
 }
 
 type RedisCache interface {

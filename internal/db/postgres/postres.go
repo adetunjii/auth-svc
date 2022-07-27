@@ -51,8 +51,8 @@ func (postgresDB *PostgresDB) Connect(config *Config) error {
 	postgresDB.DB = db
 
 	//Migrate the schema
-	// TODO: undo comment
-	err = postgresDB.DB.AutoMigrate(&models.Role{}, &models.Interest{}, &models.User{}, &models.UserRole{})
+	//err = postgresDB.DB.AutoMigrate(&models.Role{}, &models.Interest{}, &models.User{}, &models.UserRole{}, &models.Country{})
+	err = postgresDB.DB.AutoMigrate(&models.Country{})
 	if err != nil {
 		return err
 	}

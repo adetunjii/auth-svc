@@ -18,10 +18,17 @@ func Start() {
 	// Create a new services
 	//helpers.InitializeLogDir()
 
-	PORT := fmt.Sprintf(":%s", viper.Get("PORT"))
+	PORT := fmt.Sprintf(":%s", viper.GetString("PORT"))
+	fmt.Println("PORT:::", PORT)
 	if PORT == ":" {
 		PORT += "8080"
 	}
+
+	if PORT == "" {
+		PORT = ":8080"
+	}
+
+	fmt.Println(PORT)
 
 	services := config.LoadConfig()
 
