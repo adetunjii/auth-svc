@@ -4,7 +4,6 @@ import (
 	"context"
 	"dh-backend-auth-sv/internal/proto"
 	"encoding/json"
-	"fmt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -22,7 +21,6 @@ func (s *Server) GetAllCountries(ctx context.Context, req *emptypb.Empty) (*prot
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "cannot fetch countries")
 	}
-	fmt.Println(countries)
 	var c []*proto.Country
 
 	err = json.Unmarshal(j, &c)
@@ -30,8 +28,6 @@ func (s *Server) GetAllCountries(ctx context.Context, req *emptypb.Empty) (*prot
 		log.Println(err)
 		return nil, status.Errorf(codes.Internal, "cannot fetch countries")
 	}
-
-	fmt.Println(c)
 
 	res := &proto.GetAllCountryResponse{Countries: c}
 
