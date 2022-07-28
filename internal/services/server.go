@@ -37,7 +37,6 @@ func Start() {
 	// connect to user service via gRPC
 	// TODO: introduce service discovery here
 	conn, err := grpc.Dial(fmt.Sprintf("%s", userServiceUrl), grpc.WithInsecure())
-
 	if err != nil {
 		log.Printf("cannot connect to user service: %v", err)
 	}
