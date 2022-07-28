@@ -1,6 +1,7 @@
 package rediscache
 
 import (
+	"context"
 	"github.com/go-redis/redis/v8"
 	"log"
 	"time"
@@ -48,6 +49,11 @@ func (r *Redis) GetClient(config *Config) error {
 	}
 	r.client = redis.NewClient(redisURL)
 	//defer r.CloseConnection()
+
+	_, err := r.client.Ping(context.Background()).Result()
+	if err != nil {
+		log.Fatalf("error connecting to redis %v", err)
+	}
 
 	log.Println("connected to redis successfully...")
 	return nil
