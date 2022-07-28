@@ -34,6 +34,8 @@ func Start() {
 
 	userServiceUrl := viper.Get("USER_SERVICE_URL")
 
+	fmt.Println(userServiceUrl)
+
 	// connect to user service via gRPC
 	// TODO: introduce service discovery here
 	conn, err := grpc.Dial(fmt.Sprintf("%s", userServiceUrl), grpc.WithInsecure())
