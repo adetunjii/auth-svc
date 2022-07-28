@@ -19,7 +19,10 @@ func (s *Server) Register(ctx context.Context, request *proto.RegisterRequest) (
 		State:     request.GetState(),
 		Country:   request.GetCountry(),
 	}
-	res, err := s.UserService.CreateUser(ctx, &proto.CreateUserRequest{User: user})
+
+	userRequest := &proto.CreateUserRequest{User: user}
+
+	res, err := s.UserService.CreateUser(ctx, userRequest)
 	if err != nil {
 		helpers.LogEvent("ERROR", fmt.Sprintf("cannot register user"))
 		return nil, err
