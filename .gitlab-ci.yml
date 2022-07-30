@@ -23,9 +23,9 @@ workflow:
     
 stages:
 #    - lint
-    - build
+    #- build
     - build-push-docker
-    - deploy-staging
+    #- deploy-staging
 
 
 # lint:
@@ -48,17 +48,16 @@ stages:
 #         - lint.xml
 
 
-compile:
-    stage: build
-    extends: .go-cache
-    script:
-      - go mod tidy
-      - ls
-      - cp .env.example .env
-      - go build -race -o user-sv
-    artifacts:
-      paths:
-        - user-sv
+# compile:
+#     stage: build
+#     extends: .go-cache
+#     script:
+#       - go mod tidy
+#       - cp .env.example .env
+#       - go build -race -o auth-sv
+#     artifacts:
+#       paths:
+#         - auth-sv
 
 
 # coverage:
@@ -99,27 +98,28 @@ build-push-docker-image-job:
         tag=":$CI_COMMIT_REF_SLUG"
         echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
       fi
+    - ls
     - docker build --pull -t "$CS_DEFAULT_BRANCH_IMAGE" .
     - docker push "$CS_DEFAULT_BRANCH_IMAGE"
 
 
-deploy:staging:
-    image:
-        name: bitnami/kubectl:latest
-        entrypoint: ['']
-    stage: deploy-staging
-    variables:
-        MANIFEST_PROJECT_ID: 30770380
-        TARGET_ENVIRONMENT: development
-        SERVICE: user-service
-    #only:
-    #    - master
-    script:
-        - kubectl config get-contexts
-        - kubectl config use-context $KUBE_CONTEXT
-        #- kubectl apply -f .manifests/overlays/dev/. -n $TARGET_ENVIRONMENT
-        #- kubectl set image $ROLLOUT_RESOURCE_TYPE/$SERVICE $SERVICE=${CI_REGISTRY}/$CS_DEFAULT_BRANCH_IMAGE -n $TARGET_ENVIRONMENT
-        #- kubectl apply -f .manifests/overlays/dev/. -n dh-dev
-    environment:
-        name: $TARGET_ENVIRONMENT
+# deploy:staging:
+#     image:
+#         name: bitnami/kubectl:latest
+#         entrypoint: ['']
+#     stage: deploy-staging
+#     variables:
+#         MANIFEST_PROJECT_ID: 30770380
+#         TARGET_ENVIRONMENT: development
+#         SERVICE: user-service
+#     #only:
+#     #    - master
+#     script:
+#         - kubectl config get-contexts
+#         - kubectl config use-context $KUBE_CONTEXT
+#         #- kubectl apply -f .manifests/overlays/dev/. -n $TARGET_ENVIRONMENT
+#         #- kubectl set image $ROLLOUT_RESOURCE_TYPE/$SERVICE $SERVICE=${CI_REGISTRY}/$CS_DEFAULT_BRANCH_IMAGE -n $TARGET_ENVIRONMENT
+#         #- kubectl apply -f .manifests/overlays/dev/. -n dh-dev
+#     environment:
+#         name: $TARGET_ENVIRONMENT
 
