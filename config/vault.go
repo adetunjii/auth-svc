@@ -29,6 +29,18 @@ type Vault struct {
 
 func VaultSecrets() (*Config, error) {
 
+	viper.AddConfigPath(".")
+	viper.SetConfigName("app")
+	viper.SetConfigType("env")
+
+	viper.AutomaticEnv()
+
+	if err := viper.ReadInConfig(); err != nil {
+		return nil, fmt.Errorf("could not read viper config: %v", err)
+	}
+
+	fmt.Println(viper.GetString("VAULT_ADDR"))
+
 	vaultConfig := vault.DefaultConfig()
 	vaultConfig.Address = viper.GetString("VAULT_ADDR")
 

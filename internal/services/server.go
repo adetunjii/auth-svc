@@ -33,7 +33,6 @@ func Start() {
 	services := config.LoadConfig()
 
 	userServiceUrl := viper.Get("USER_SERVICE_URL")
-
 	fmt.Println(userServiceUrl)
 
 	// connect to user service via gRPC

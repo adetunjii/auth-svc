@@ -1,7 +1,6 @@
 syntax = "proto3";
 option go_package = "internal/proto";
 
-
 message Interest{
   string interest = 1;
 }
@@ -27,6 +26,8 @@ message UpdateUserInformation {
   string apartment_no = 7;
 }
 
+
+
 //Getting a single user details by email
 message GetUserDetailsByEmailRequest{
   string email = 1;
@@ -51,6 +52,21 @@ message GetUserRolesResponse {
   string role_id = 1;
 }
 
+message GetUserByIdRequest {
+  string userId = 1;
+}
+
+message GetUserByIdResponse {
+  string first_name = 1;
+  string last_name = 2;
+  string email = 3;
+  string phone = 4;
+  string address = 5;
+  string state = 6;
+  string country = 7;
+  bool is_email_verified = 8;
+  bool is_phone_verified = 9;
+}
 
 //Get all roles
 message GetAllRolesRequest {}
@@ -193,7 +209,6 @@ message CreateUserRequest {
 message CreateUserResponse {
   string message= 1;
   string userReference = 2;
-
 }
 
 //Create Interest
@@ -316,19 +331,21 @@ message VerifyOTPByPhoneResponse {
   string message = 1;
 }
 
-message UserProfileInfo {
-  string firstName = 1;
-  string lastName = 2;
-  string address = 3;
-  string State = 4;
-  string Country = 5;
-  string apartmentNo = 6;
+message GetUserByPhoneNumberRequest {
+  string phone = 1;
+  string phoneCode = 2;
+}
+
+message GetUserByPhoneNumberResponse {
+  bytes response = 1;
 }
 
 service UserService{
   rpc GetUserRoles(GetUserRolesRequest) returns (GetUserRolesResponse) {}
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
   rpc GetUserDetailsByEmail(GetUserDetailsByEmailRequest) returns (GetUserDetailsByEmailResponse) {}
+  rpc GetUserDetailsByPhoneNumber(GetUserByPhoneNumberRequest) returns (GetUserByPhoneNumberResponse) {}
+  rpc GetUserDetailsById(GetUserByIdRequest) returns (GetUserByIdResponse) {}
   rpc GetUserDetailsByReference(GetUserDetailsByReferenceRequest) returns (GetUserDetailsByReferenceResponse) {}
   rpc AddRoleToUser(AddRoleToUserRequest) returns (AddRoleToUserResponse) {}
   rpc VerifyOTP (CreateOTPRequest) returns (CreateOTPResponse) {}

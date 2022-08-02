@@ -9,11 +9,11 @@ import (
 	"dh-backend-auth-sv/internal/proto"
 	"encoding/json"
 	"fmt"
-	"strings"
-
+	//"github.com/Adetunjii/protobuf-mono/go/pkg/proto"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"strings"
 )
 
 type Server struct {
@@ -25,11 +25,8 @@ type Server struct {
 }
 
 func (s *Server) Login(ctx context.Context, request *proto.LoginRequest) (*proto.LoginResponse, error) {
-	email := strings.TrimSpace(request.GetEmail())
-	if !helpers.IsEmailValid(email) {
-		helpers.LogEvent("ERROR", fmt.Sprintf("%s: %s", helpers.ErrInvalidEmail, email))
-		return nil, status.Errorf(codes.InvalidArgument, "Email is not valid")
-	}
+	login := strings.TrimSpace(request.GetLogin())
+
 	password := strings.TrimSpace(request.GetPassword())
 	sevenOrMore, number, upper, special := helpers.VerifyPassword(password)
 	if !sevenOrMore {
@@ -59,22 +56,44 @@ func (s *Server) Login(ctx context.Context, request *proto.LoginRequest) (*proto
 
 	fmt.Println(hashedPassword)
 
-	userRequest := proto.GetUserDetailsByEmailRequest{
-		Email: email,
-	}
-	res, err := s.UserService.GetUserDetailsByEmail(context.Background(), &userRequest)
-	if err != nil {
-		helpers.LogEvent("ERROR", fmt.Sprintf("user with this email does not exist!"))
-		return nil, status.Errorf(codes.NotFound, "user with this email does not exist!")
-	}
-
+	var userByEmailResponse *proto.GetUserDetailsByEmailResponse
+	var userByPhoneResponse *proto.GetUserByPhoneNumberResponse
 	user := &models.User{}
 
-	err = json.Unmarshal(res.GetResponse(), user)
-	if err != nil {
-		fmt.Println(err)
-		helpers.LogEvent("ERROR", fmt.Sprintf("cannot unmarshal user %v", err))
-		return nil, status.Errorf(codes.Internal, "cannot process user info")
+	if helpers.IsEmailValid(login) {
+		userRequestByEmail := proto.GetUserDetailsByEmailRequest{
+			Email: login,
+		}
+
+		userByEmailResponse, err = s.UserService.GetUserDetailsByEmail(context.Background(), &userRequestByEmail)
+		if err != nil {
+			helpers.LogEvent("ERROR", fmt.Sprintf("user with this email does not exist!"))
+			return nil, status.Errorf(codes.NotFound, "invalid user")
+		}
+
+		err = json.Unmarshal(userByEmailResponse.GetResponse(), user)
+		if err != nil {
+			fmt.Println(err)
+			helpers.LogEvent("ERROR", fmt.Sprintf("cannot unmarshal user %v", err))
+			return nil, status.Errorf(codes.Internal, "cannot process user info")
+		}
+
+	} else {
+		userRequestByPhone := proto.GetUserByPhoneNumberRequest{
+			Phone: login,
+		}
+		userByPhoneResponse, err = s.UserService.GetUserDetailsByPhoneNumber(context.Background(), &userRequestByPhone)
+		if err != nil {
+			helpers.LogEvent("ERROR", fmt.Sprintf("user with this phone number does not exist"))
+			return nil, status.Errorf(codes.NotFound, "invalid user")
+		}
+
+		err = json.Unmarshal(userByPhoneResponse.GetResponse(), user)
+		if err != nil {
+			fmt.Println(err)
+			helpers.LogEvent("ERROR", fmt.Sprintf("cannot unmarshal user %v", err))
+			return nil, status.Errorf(codes.Internal, "cannot process user info")
+		}
 	}
 
 	if !helpers.CheckPasswordHash(password, []byte(user.HashedPassword)) {

@@ -7,7 +7,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -26,7 +25,7 @@ type AuthServiceClient interface {
 	VerifyEmail(ctx context.Context, in *EmailVerificationRequest, opts ...grpc.CallOption) (*EmailVerificationResponse, error)
 	VerifyLogin(ctx context.Context, in *VerifyLoginRequest, opts ...grpc.CallOption) (*VerifyLoginResponse, error)
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
-	GetAllCountries(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetAllCountryResponse, error)
+	GetAllCountries(ctx context.Context, in *GetAllCountryRequest, opts ...grpc.CallOption) (*GetAllCountryResponse, error)
 }
 
 type authServiceClient struct {
@@ -100,7 +99,7 @@ func (c *authServiceClient) Logout(ctx context.Context, in *LogoutRequest, opts 
 	return out, nil
 }
 
-func (c *authServiceClient) GetAllCountries(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetAllCountryResponse, error) {
+func (c *authServiceClient) GetAllCountries(ctx context.Context, in *GetAllCountryRequest, opts ...grpc.CallOption) (*GetAllCountryResponse, error) {
 	out := new(GetAllCountryResponse)
 	err := c.cc.Invoke(ctx, "/auth.AuthService/GetAllCountries", in, out, opts...)
 	if err != nil {
@@ -120,7 +119,7 @@ type AuthServiceServer interface {
 	VerifyEmail(context.Context, *EmailVerificationRequest) (*EmailVerificationResponse, error)
 	VerifyLogin(context.Context, *VerifyLoginRequest) (*VerifyLoginResponse, error)
 	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
-	GetAllCountries(context.Context, *emptypb.Empty) (*GetAllCountryResponse, error)
+	GetAllCountries(context.Context, *GetAllCountryRequest) (*GetAllCountryResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -149,7 +148,7 @@ func (UnimplementedAuthServiceServer) VerifyLogin(context.Context, *VerifyLoginR
 func (UnimplementedAuthServiceServer) Logout(context.Context, *LogoutRequest) (*LogoutResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Logout not implemented")
 }
-func (UnimplementedAuthServiceServer) GetAllCountries(context.Context, *emptypb.Empty) (*GetAllCountryResponse, error) {
+func (UnimplementedAuthServiceServer) GetAllCountries(context.Context, *GetAllCountryRequest) (*GetAllCountryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllCountries not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
@@ -292,7 +291,7 @@ func _AuthService_Logout_Handler(srv interface{}, ctx context.Context, dec func(
 }
 
 func _AuthService_GetAllCountries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(GetAllCountryRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -304,7 +303,7 @@ func _AuthService_GetAllCountries_Handler(srv interface{}, ctx context.Context, 
 		FullMethod: "/auth.AuthService/GetAllCountries",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).GetAllCountries(ctx, req.(*emptypb.Empty))
+		return srv.(AuthServiceServer).GetAllCountries(ctx, req.(*GetAllCountryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

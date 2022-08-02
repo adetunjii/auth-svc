@@ -8,4 +8,5 @@ type Country struct {
 	NiceName  string `json:"nice_name"`
 	Iso3      string `json:"iso3"`
 	NumCode   int    `json:"num_code"`
+	ImageUrl  string `json:"image_url,omitempty"`
 }

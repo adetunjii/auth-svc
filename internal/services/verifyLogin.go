@@ -18,6 +18,7 @@ import (
 )
 
 func (s *Server) VerifyLogin(ctx context.Context, req *proto.VerifyLoginRequest) (*proto.VerifyLoginResponse, error) {
+
 	otp := req.GetOtp()
 	requestId := req.GetRequestId()
 	otpType := req.GetType()
@@ -39,6 +40,7 @@ func (s *Server) VerifyLogin(ctx context.Context, req *proto.VerifyLoginRequest)
 	userRequest := proto.GetUserDetailsByEmailRequest{
 		Email: email,
 	}
+
 	res, err := s.UserService.GetUserDetailsByEmail(context.Background(), &userRequest)
 	if err != nil {
 		helpers.LogEvent("ERROR", fmt.Sprintf("user with this email does not exist!"))
@@ -68,10 +70,12 @@ func (s *Server) VerifyLogin(ctx context.Context, req *proto.VerifyLoginRequest)
 		"iat": now.Unix(),
 		"nbf": now.Unix(),
 	})
+
 	tokenStr, err := token.SignedString([]byte(email))
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
+
 	activities := &models.Activities{
 		ID:     uuid.New().String(),
 		UserID: user.ID,

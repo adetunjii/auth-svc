@@ -2,12 +2,11 @@ syntax = "proto3";
 option go_package = "internal/proto";
 package auth;
 
-import "google/protobuf/empty.proto";
-
 message LoginRequest {
-   string email = 1;
+   string login = 1;
    string password = 2;
 }
+
 message LoginResponse {
   string message = 1;
   string requestId = 2;
@@ -18,20 +17,22 @@ message RegisterRequest {
   string lastName = 2;
   string email = 3;
   string phoneNumber = 4;
-  string password = 5;
-  string address = 6;
-  string state = 7;
-  string country = 8;
+  string phoneCountryCode = 5;
+  string password = 6;
+  string address = 7;
+  string state = 8;
+  string country = 9;
 }
 
 message RegisterResponse {
-  string message= 1;
-  string userReference = 2;
+  string message = 1;
+  string requestId = 2;
 }
 
-message InitEmailVerificationRequest {
-  string email = 1;
-  string type = 2;
+message InitPhoneVerificationRequest {
+  string phoneNumber = 1;
+  string phoneCountryCode = 2;
+  string type = 3;
 }
 
 message InitEmailVerificationResponse {
@@ -42,10 +43,6 @@ message InitEmailVerificationResponse {
     REG = 1;
   }
   OtpType type = 3;
-}
-
-message InitPhoneVerificationRequest {
-  string phone = 1;
 }
 
 message InitPhoneVerificationResponse {
@@ -97,17 +94,19 @@ message Country {
   string phoneCode = 4;
 }
 
+message GetAllCountryRequest{}
+
 message GetAllCountryResponse {
   repeated Country countries = 1;
 }
 
-service AuthService{
+
+service AuthService {
   rpc Login(LoginRequest) returns (LoginResponse) {}
   rpc Register(RegisterRequest) returns (RegisterResponse) {}
-  rpc InitEmailVerification(InitEmailVerificationRequest) returns (InitEmailVerificationResponse) {}
   rpc InitPhoneVerification(InitPhoneVerificationRequest) returns (InitPhoneVerificationResponse) {}
   rpc VerifyEmail(EmailVerificationRequest) returns (EmailVerificationResponse) {}
   rpc VerifyLogin(VerifyLoginRequest) returns (VerifyLoginResponse) {}
   rpc Logout (LogoutRequest) returns (LogoutResponse){}
-  rpc GetAllCountries(google.protobuf.Empty) returns (GetAllCountryResponse) {}
+  rpc GetAllCountries(GetAllCountryRequest) returns (GetAllCountryResponse) {}
 }

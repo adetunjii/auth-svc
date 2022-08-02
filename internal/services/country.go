@@ -6,11 +6,10 @@ import (
 	"encoding/json"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"log"
 )
 
-func (s *Server) GetAllCountries(ctx context.Context, req *emptypb.Empty) (*proto.GetAllCountryResponse, error) {
+func (s *Server) GetAllCountries(ctx context.Context, req *proto.GetAllCountryRequest) (*proto.GetAllCountryResponse, error) {
 	countries, err := s.DB.GetAllCountries()
 	if err != nil {
 		log.Println(err)
