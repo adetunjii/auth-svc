@@ -4,11 +4,12 @@ import (
 	"context"
 	"dh-backend-auth-sv/internal/helpers"
 	"dh-backend-auth-sv/internal/models"
-	"dh-backend-auth-sv/internal/proto"
 	"encoding/json"
 	"fmt"
 
 	"github.com/google/uuid"
+
+	"github.com/Adetunjii/protobuf-mono/go/pkg/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -29,6 +30,10 @@ func (s *Server) InitEmailVerification(ctx context.Context, request *proto.InitE
 		return nil, err
 	}
 
+	if user.IsEmailVerified {
+		return nil, status.Error(codes.PermissionDenied, "Email already verified")
+	}
+
 	// generate otp
 	// TODO: generate random otps
 	randomOtp := "123456"
@@ -38,14 +43,14 @@ func (s *Server) InitEmailVerification(ctx context.Context, request *proto.InitE
 		return nil, status.Errorf(codes.Internal, "failed to create requestId for email verification")
 	}
 
-	ev := &models.EmailVerification{
+	ev := &models.OtpVerification{
 		Otp:   randomOtp,
 		Email: user.Email,
 	}
 
 	fmt.Println(requestId.String())
 	// store otp in cache for 10 minutes using requestId as the key
-	if err := s.RedisCache.SaveOTP(requestId.String(), otpType, ev); err != nil {
+	if err := s.RedisCache.SaveOTP(requestId.String(), otpType.String(), ev); err != nil {
 		helpers.LogEvent("ERROR", fmt.Sprintf("failed to save otp to redis: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to save otp")
 	}
@@ -65,12 +70,40 @@ func (s *Server) VerifyEmail(ctx context.Context, request *proto.EmailVerificati
 		return nil, status.Errorf(codes.InvalidArgument, "otp has expired, please try again!")
 	}
 
+	fmt.Println(data)
+
 	if otp != data.Otp {
 		return nil, status.Errorf(codes.InvalidArgument, "otp is incorrect")
 	}
 
 	if email != data.Email {
-		return nil, status.Errorf(codes.InvalidArgument, "email does not match")
+		helpers.LogEvent("ERROR", fmt.Sprintf("email %s doesn't match %s", email, data.Email))
+		return nil, status.Errorf(codes.InvalidArgument, "verification failed")
+	}
+
+	user := &models.User{}
+	userRequest := proto.GetUserDetailsByEmailRequest{Email: email}
+
+	userDetailsResponse, err := s.UserService.GetUserDetailsByEmail(ctx, &userRequest)
+	if err != nil {
+		helpers.LogEvent("ERROR", fmt.Sprintf("user not found: %v", err))
+		return nil, err
+	}
+
+	err = json.Unmarshal(userDetailsResponse.GetResponse(), user)
+	if err != nil {
+		fmt.Println(err)
+		helpers.LogEvent("ERROR", fmt.Sprintf("cannot unmarshal user %v", err))
+		return nil, status.Errorf(codes.Internal, "cannot process user info")
+	}
+
+	updateUserInfo := proto.UpdateUserInformation{IsEmailVerified: true}
+	updateUserRequest := proto.UpdateUserInformationRequest{Id: user.ID, PersonalInformation: &updateUserInfo}
+
+	updateUser, err := s.UserService.UpdateUserInformation(ctx, &updateUserRequest)
+	if err != nil {
+		helpers.LogEvent("ERROR", fmt.Sprintf("cannot update user %v", updateUser))
+		return nil, status.Errorf(codes.Internal, "cannot update user %v", err)
 	}
 
 	response := &proto.EmailVerificationResponse{Message: "successfully verified email"}

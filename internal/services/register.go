@@ -4,9 +4,8 @@ import (
 	"context"
 	"dh-backend-auth-sv/internal/helpers"
 	"dh-backend-auth-sv/internal/models"
-	"dh-backend-auth-sv/internal/proto"
-	"encoding/json"
 	"fmt"
+	"github.com/Adetunjii/protobuf-mono/go/pkg/proto"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -19,6 +18,7 @@ func (s *Server) Register(ctx context.Context, request *proto.RegisterRequest) (
 		LastName:  request.GetLastName(),
 		Email:     request.GetEmail(),
 		Phone:     request.GetPhoneNumber(),
+		PhoneCode: request.GetPhoneCode(),
 		Password:  request.GetPassword(),
 		Address:   request.GetAddress(),
 		State:     request.GetState(),
@@ -29,20 +29,7 @@ func (s *Server) Register(ctx context.Context, request *proto.RegisterRequest) (
 
 	_, err := s.UserService.CreateUser(ctx, userRequest)
 	if err != nil {
-		helpers.LogEvent("ERROR", fmt.Sprintf("cannot register user"))
-		return nil, err
-	}
-
-	getUserRequest := &proto.GetUserDetailsByEmailRequest{Email: user.Email}
-	res, err := s.UserService.GetUserDetailsByEmail(ctx, getUserRequest)
-	if err != nil {
-		return nil, err
-	}
-
-	usr := &models.User{}
-
-	err = json.Unmarshal(res.GetResponse(), usr)
-	if err != nil {
+		helpers.LogEvent("ERROR", fmt.Sprintf("cannot register user: %v", err))
 		return nil, err
 	}
 
@@ -55,7 +42,7 @@ func (s *Server) Register(ctx context.Context, request *proto.RegisterRequest) (
 		return nil, status.Errorf(codes.Internal, "failed to create requestId for email verification")
 	}
 
-	ev := &models.EmailVerification{
+	ev := &models.OtpVerification{
 		Otp:   randomOtp,
 		Email: user.Email,
 	}

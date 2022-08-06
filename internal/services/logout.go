@@ -2,10 +2,12 @@ package services
 
 import (
 	"context"
-	"dh-backend-auth-sv/internal/proto"
+	"github.com/Adetunjii/protobuf-mono/go/pkg/proto"
+	//"dh-backend-auth-sv/internal/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log"
+
 	"strings"
 )
 

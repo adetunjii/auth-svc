@@ -3,7 +3,7 @@ module dh-backend-auth-sv
 go 1.18
 
 require (
-	github.com/Adetunjii/protobuf-mono v0.0.0-20220802001622-3e5088345544
+	github.com/Adetunjii/protobuf-mono v0.0.0-20220806020253-4ca87026888b
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-redis/redis/v8 v8.11.5
@@ -16,7 +16,7 @@ require (
 	github.com/spf13/viper v1.12.0
 	github.com/stretchr/testify v1.8.0
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
-	golang.org/x/net v0.0.0-20220728211354-c7608f3a8462
+	golang.org/x/net v0.0.0-20220805013720-a33c5aa5df48
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.1
 	gorm.io/driver/postgres v1.3.8
@@ -97,10 +97,10 @@ require (
 	github.com/ryanuber/go-glob v1.0.0 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
-	golang.org/x/sys v0.0.0-20220731174439-a90be440212d // indirect
+	golang.org/x/sys v0.0.0-20220804214406-8e32c043e418 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9 // indirect
-	google.golang.org/genproto v0.0.0-20220801145646-83ce21fca29f // indirect
+	google.golang.org/genproto v0.0.0-20220805133916-01dd62135a58 // indirect
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
