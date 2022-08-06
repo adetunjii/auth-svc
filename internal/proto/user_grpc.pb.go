@@ -21,6 +21,8 @@ type UserServiceClient interface {
 	GetUserRoles(ctx context.Context, in *GetUserRolesRequest, opts ...grpc.CallOption) (*GetUserRolesResponse, error)
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
 	GetUserDetailsByEmail(ctx context.Context, in *GetUserDetailsByEmailRequest, opts ...grpc.CallOption) (*GetUserDetailsByEmailResponse, error)
+	GetUserDetailsByPhoneNumber(ctx context.Context, in *GetUserByPhoneNumberRequest, opts ...grpc.CallOption) (*GetUserByPhoneNumberResponse, error)
+	GetUserDetailsById(ctx context.Context, in *GetUserByIdRequest, opts ...grpc.CallOption) (*GetUserByIdResponse, error)
 	GetUserDetailsByReference(ctx context.Context, in *GetUserDetailsByReferenceRequest, opts ...grpc.CallOption) (*GetUserDetailsByReferenceResponse, error)
 	AddRoleToUser(ctx context.Context, in *AddRoleToUserRequest, opts ...grpc.CallOption) (*AddRoleToUserResponse, error)
 	VerifyOTP(ctx context.Context, in *CreateOTPRequest, opts ...grpc.CallOption) (*CreateOTPResponse, error)
@@ -77,6 +79,24 @@ func (c *userServiceClient) CreateUser(ctx context.Context, in *CreateUserReques
 func (c *userServiceClient) GetUserDetailsByEmail(ctx context.Context, in *GetUserDetailsByEmailRequest, opts ...grpc.CallOption) (*GetUserDetailsByEmailResponse, error) {
 	out := new(GetUserDetailsByEmailResponse)
 	err := c.cc.Invoke(ctx, "/UserService/GetUserDetailsByEmail", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetUserDetailsByPhoneNumber(ctx context.Context, in *GetUserByPhoneNumberRequest, opts ...grpc.CallOption) (*GetUserByPhoneNumberResponse, error) {
+	out := new(GetUserByPhoneNumberResponse)
+	err := c.cc.Invoke(ctx, "/UserService/GetUserDetailsByPhoneNumber", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetUserDetailsById(ctx context.Context, in *GetUserByIdRequest, opts ...grpc.CallOption) (*GetUserByIdResponse, error) {
+	out := new(GetUserByIdResponse)
+	err := c.cc.Invoke(ctx, "/UserService/GetUserDetailsById", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -340,6 +360,8 @@ type UserServiceServer interface {
 	GetUserRoles(context.Context, *GetUserRolesRequest) (*GetUserRolesResponse, error)
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
 	GetUserDetailsByEmail(context.Context, *GetUserDetailsByEmailRequest) (*GetUserDetailsByEmailResponse, error)
+	GetUserDetailsByPhoneNumber(context.Context, *GetUserByPhoneNumberRequest) (*GetUserByPhoneNumberResponse, error)
+	GetUserDetailsById(context.Context, *GetUserByIdRequest) (*GetUserByIdResponse, error)
 	GetUserDetailsByReference(context.Context, *GetUserDetailsByReferenceRequest) (*GetUserDetailsByReferenceResponse, error)
 	AddRoleToUser(context.Context, *AddRoleToUserRequest) (*AddRoleToUserResponse, error)
 	VerifyOTP(context.Context, *CreateOTPRequest) (*CreateOTPResponse, error)
@@ -380,6 +402,12 @@ func (UnimplementedUserServiceServer) CreateUser(context.Context, *CreateUserReq
 }
 func (UnimplementedUserServiceServer) GetUserDetailsByEmail(context.Context, *GetUserDetailsByEmailRequest) (*GetUserDetailsByEmailResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserDetailsByEmail not implemented")
+}
+func (UnimplementedUserServiceServer) GetUserDetailsByPhoneNumber(context.Context, *GetUserByPhoneNumberRequest) (*GetUserByPhoneNumberResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserDetailsByPhoneNumber not implemented")
+}
+func (UnimplementedUserServiceServer) GetUserDetailsById(context.Context, *GetUserByIdRequest) (*GetUserByIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserDetailsById not implemented")
 }
 func (UnimplementedUserServiceServer) GetUserDetailsByReference(context.Context, *GetUserDetailsByReferenceRequest) (*GetUserDetailsByReferenceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserDetailsByReference not implemented")
@@ -519,6 +547,42 @@ func _UserService_GetUserDetailsByEmail_Handler(srv interface{}, ctx context.Con
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServiceServer).GetUserDetailsByEmail(ctx, req.(*GetUserDetailsByEmailRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetUserDetailsByPhoneNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserByPhoneNumberRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetUserDetailsByPhoneNumber(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/UserService/GetUserDetailsByPhoneNumber",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetUserDetailsByPhoneNumber(ctx, req.(*GetUserByPhoneNumberRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetUserDetailsById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserByIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetUserDetailsById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/UserService/GetUserDetailsById",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetUserDetailsById(ctx, req.(*GetUserByIdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -999,6 +1063,14 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserDetailsByEmail",
 			Handler:    _UserService_GetUserDetailsByEmail_Handler,
+		},
+		{
+			MethodName: "GetUserDetailsByPhoneNumber",
+			Handler:    _UserService_GetUserDetailsByPhoneNumber_Handler,
+		},
+		{
+			MethodName: "GetUserDetailsById",
+			Handler:    _UserService_GetUserDetailsById_Handler,
 		},
 		{
 			MethodName: "GetUserDetailsByReference",

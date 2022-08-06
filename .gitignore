@@ -1,7 +1,9 @@
 mock_*
 .vscode
 .idea
-config/.env
+app.env
+.env
+*.env
 testimg.png
 ds_store
 .DS_Store

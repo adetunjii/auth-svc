@@ -53,7 +53,7 @@ stages:
 #     extends: .go-cache
 #     script:
 #       - go mod tidy
-#       - cp .env.example .env
+#       - cp app.env.example app.env
 #       - go build -race -o auth-sv
 #     artifacts:
 #       paths:

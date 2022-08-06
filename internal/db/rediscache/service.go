@@ -76,9 +76,9 @@ func (r *Redis) SaveOTP(key string, otpType string, value any) error {
 	return r.client.Set(context.Background(), redisKey, string(json), 10*time.Minute).Err()
 }
 
-func (r *Redis) GetOTP(key string, otpType string) (*models.EmailVerification, error) {
+func (r *Redis) GetOTP(key string, otpType string) (*models.OtpVerification, error) {
 	//response := &services.EmailVerification{}
-	response := &models.EmailVerification{}
+	response := &models.OtpVerification{}
 
 	redisKey := fmt.Sprintf("%s/%s", otpType, key)
 
@@ -91,6 +91,11 @@ func (r *Redis) GetOTP(key string, otpType string) (*models.EmailVerification, e
 	if err != nil {
 		return response, err
 	}
+	del, err := r.client.Del(context.Background(), redisKey).Result()
+	if err != nil {
+		return response, err
+	}
+	fmt.Println(del)
 
 	return response, nil
 }

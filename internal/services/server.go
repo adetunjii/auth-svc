@@ -2,8 +2,9 @@ package services
 
 import (
 	"dh-backend-auth-sv/config"
-	"dh-backend-auth-sv/internal/proto"
+	//"dh-backend-auth-sv/internal/proto"
 	"fmt"
+	"github.com/Adetunjii/protobuf-mono/go/pkg/proto"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -33,8 +34,7 @@ func Start() {
 	services := config.LoadConfig()
 
 	userServiceUrl := viper.Get("USER_SERVICE_URL")
-
-	fmt.Println(userServiceUrl)
+	fmt.Println("user service url::: ", userServiceUrl)
 
 	// connect to user service via gRPC
 	// TODO: introduce service discovery here
