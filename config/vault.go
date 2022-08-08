@@ -3,11 +3,14 @@ package config
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"log"
+	"os"
+
 	vault "github.com/hashicorp/vault/api"
 	"github.com/hashicorp/vault/api/auth/approle"
 	"github.com/spf13/viper"
-	"log"
 )
 
 type VaultParameters struct {
@@ -33,13 +36,15 @@ func VaultSecrets() (*Config, error) {
 	viper.SetConfigName("app")
 	viper.SetConfigType("env")
 
-	viper.AutomaticEnv()
-
 	if err := viper.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("could not read viper config: %v", err)
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			viper.AutomaticEnv()
+		} else {
+			return nil, fmt.Errorf("cannot load config: >>> %v", err)
+		}
 	}
 
-	fmt.Println(viper.GetString("VAULT_ADDR"))
+	fmt.Println("Vault address >>>>", viper.GetString("VAULT_ADDR"))
 
 	vaultConfig := vault.DefaultConfig()
 	vaultConfig.Address = viper.GetString("VAULT_ADDR")
@@ -170,3 +175,14 @@ func (v *Vault) GetSecretAPIKey(ctx context.Context) (string, error) {
 
 // 	return credentials, lease, nil
 // }
+
+func isExists(name string) bool {
+	_, err := os.Stat(name)
+	if err == nil {
+		return true
+	}
+	if errors.Is(err, os.ErrNotExist) {
+		return false
+	}
+	return false
+}
