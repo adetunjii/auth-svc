@@ -44,8 +44,6 @@ func VaultSecrets() (*Config, error) {
 		}
 	}
 
-	fmt.Println("Vault address >>>>", viper.GetString("VAULT_ADDR"))
-
 	vaultConfig := vault.DefaultConfig()
 	vaultConfig.Address = viper.GetString("VAULT_ADDR")
 
