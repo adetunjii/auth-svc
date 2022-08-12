@@ -6,17 +6,21 @@ import (
 	"dh-backend-auth-sv/internal/helpers"
 	"dh-backend-auth-sv/internal/models"
 	"dh-backend-auth-sv/internal/ports"
-	"github.com/golang-jwt/jwt"
+	"dh-backend-auth-sv/internal/rabbitMQ"
 	"log"
 	"os"
+	"strconv"
 	"time"
+
+	"github.com/golang-jwt/jwt"
+
 	//"dh-backend-auth-sv/internal/proto"
 	"encoding/json"
 	"fmt"
 	"strings"
 
-	"github.com/Adetunjii/protobuf-mono/go/pkg/proto"
 	"github.com/google/uuid"
+	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -24,6 +28,7 @@ import (
 type Server struct {
 	DB         ports.DB
 	RedisCache ports.RedisCache
+	RabbitMQ   *rabbitMQ.RabbitMQ
 	proto.UnimplementedAuthServiceServer
 	jwtKey      *rsa.PrivateKey
 	UserService proto.UserServiceClient
@@ -93,12 +98,12 @@ func (s *Server) Login(ctx context.Context, request *proto.LoginRequest) (*proto
 		}
 
 		userRequestByPhone := proto.GetUserByPhoneNumberRequest{
-			Phone:     login,
+			Phone:     helpers.TrimPhoneNumber(login, phoneCode),
 			PhoneCode: phoneCode,
 		}
 		userByPhoneResponse, err = s.UserService.GetUserDetailsByPhoneNumber(context.Background(), &userRequestByPhone)
 		if err != nil {
-			helpers.LogEvent("ERROR", fmt.Sprintf("user with this phone number does not exist"))
+			helpers.LogEvent("ERROR", fmt.Sprint("user with this phone number does not exist"))
 			return nil, status.Errorf(codes.NotFound, "invalid user")
 		}
 
@@ -120,7 +125,7 @@ func (s *Server) Login(ctx context.Context, request *proto.LoginRequest) (*proto
 	isPhoneVerified := user.IsPhoneVerified
 
 	if !isEmailVerified || !isPhoneVerified {
-		helpers.LogEvent("ERROR", fmt.Sprintf("Please verify account to proceed!"))
+		helpers.LogEvent("ERROR", fmt.Sprint("Please verify account to proceed!"))
 
 		if !isEmailVerified {
 			response := &proto.LoginResponse{
@@ -141,13 +146,13 @@ func (s *Server) Login(ctx context.Context, request *proto.LoginRequest) (*proto
 
 	}
 
-	randomOtp := "123456"
+	randomOtp := strconv.Itoa(helpers.RandomOtp())
 	requestId, err := uuid.NewRandom()
 	if err != nil {
 		helpers.LogEvent("ERROR", "failed to create requestId for email verification")
 		return nil, status.Errorf(codes.Internal, "failed to create requestId for email verification")
 	}
-
+	fmt.Println(randomOtp)
 	ov := &models.OtpVerification{}
 
 	if helpers.IsEmailValid(login) {
@@ -170,12 +175,33 @@ func (s *Server) Login(ctx context.Context, request *proto.LoginRequest) (*proto
 	}
 
 	if helpers.IsEmailValid(login) {
+
+		// create a queue message and push to the notification queue
+		queueMessage := models.QueueMessage{
+			Otp:              randomOtp,
+			User:             *user,
+			MessageType:      "login_email_verification",
+			NotificationType: "email",
+		}
+
+		s.RabbitMQ.Publish("notification_queue", queueMessage)
+
 		response := &proto.LoginResponse{
 			Message:   "An otp has been sent to your email",
 			RequestId: requestId.String(),
 		}
 		return response, nil
 	} else {
+
+		queueMessage := models.QueueMessage{
+			Otp:              randomOtp,
+			User:             *user,
+			MessageType:      "login_phone_verification",
+			NotificationType: "sms",
+		}
+
+		s.RabbitMQ.Publish("notification_queue", queueMessage)
+
 		response := &proto.LoginResponse{
 			Message:   "An otp has been sent to your phone number",
 			RequestId: requestId.String(),

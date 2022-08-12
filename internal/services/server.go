@@ -4,15 +4,16 @@ import (
 	"dh-backend-auth-sv/config"
 	//"dh-backend-auth-sv/internal/proto"
 	"fmt"
-	"github.com/Adetunjii/protobuf-mono/go/pkg/proto"
-	"github.com/spf13/viper"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-	_ "google.golang.org/grpc/reflection"
 	"log"
 	"net"
 	"os"
 	"os/signal"
+
+	"github.com/spf13/viper"
+	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	_ "google.golang.org/grpc/reflection"
 )
 
 func Start() {
@@ -51,6 +52,7 @@ func Start() {
 	pd := &Server{
 		DB:          services.DB,
 		RedisCache:  services.Redis,
+		RabbitMQ:    services.RabbitMQ,
 		UserService: userService,
 	}
 

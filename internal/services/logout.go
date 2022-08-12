@@ -2,11 +2,14 @@ package services
 
 import (
 	"context"
-	"github.com/Adetunjii/protobuf-mono/go/pkg/proto"
+
+	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
+
 	//"dh-backend-auth-sv/internal/proto"
+	"log"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"log"
 
 	"strings"
 )

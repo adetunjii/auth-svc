@@ -6,15 +6,17 @@ import (
 	"dh-backend-auth-sv/internal/models"
 	"encoding/json"
 	"fmt"
-	"github.com/Adetunjii/protobuf-mono/go/pkg/proto"
+	"strconv"
+
 	"github.com/google/uuid"
+	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func (s *Server) InitPhoneVerification(ctx context.Context, request *proto.InitPhoneVerificationRequest) (*proto.InitPhoneVerificationResponse, error) {
-	phone := request.GetPhoneNumber()
 	phoneCode := request.GetPhoneCode()
+	phone := helpers.TrimPhoneNumber(request.GetPhoneNumber(), phoneCode)
 	otpType := request.GetType()
 
 	if otpType != proto.OtpType_REG {
@@ -44,8 +46,7 @@ func (s *Server) InitPhoneVerification(ctx context.Context, request *proto.InitP
 		return nil, status.Error(codes.PermissionDenied, "Phone number already verified")
 	}
 
-	// TODO: generate random OTPs
-	randomOTP := "123456"
+	randomOtp := strconv.Itoa(helpers.RandomOtp())
 	requestId, err := uuid.NewRandom()
 	if err != nil {
 		helpers.LogEvent("ERROR", "failed to create requestId for Phone Verification")
@@ -53,7 +54,7 @@ func (s *Server) InitPhoneVerification(ctx context.Context, request *proto.InitP
 	}
 
 	ov := &models.OtpVerification{
-		Otp:       randomOTP,
+		Otp:       randomOtp,
 		Phone:     user.PhoneNumber,
 		PhoneCode: user.PhoneCode,
 	}
@@ -63,13 +64,23 @@ func (s *Server) InitPhoneVerification(ctx context.Context, request *proto.InitP
 		return nil, status.Errorf(codes.Internal, "failed to save otp")
 	}
 
+	// create queue message and send to the notification queue
+	queueMessage := models.QueueMessage{
+		Otp:              randomOtp,
+		User:             *user,
+		MessageType:      "reg_phone_verification",
+		NotificationType: "sms",
+	}
+
+	s.RabbitMQ.Publish("notification_queue", queueMessage)
 	response := &proto.InitPhoneVerificationResponse{Message: "An OTP has been sent to your phone number", RequestId: requestId.String()}
 	return response, nil
 }
 
 func (s *Server) VerifyPhone(ctx context.Context, request *proto.PhoneVerificationRequest) (*proto.PhoneVerificationResponse, error) {
-	phone := request.GetPhoneNumber()
 	phoneCode := request.GetPhoneCode()
+	phone := helpers.TrimPhoneNumber(request.GetPhoneNumber(), phoneCode)
+
 	otp := request.GetOtp()
 	requestId := request.GetRequestID()
 	otpType := request.GetType()

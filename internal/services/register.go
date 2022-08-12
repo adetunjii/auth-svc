@@ -4,20 +4,25 @@ import (
 	"context"
 	"dh-backend-auth-sv/internal/helpers"
 	"dh-backend-auth-sv/internal/models"
+	"encoding/json"
 	"fmt"
-	"github.com/Adetunjii/protobuf-mono/go/pkg/proto"
+	"strconv"
+
 	"github.com/google/uuid"
+	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func (s *Server) Register(ctx context.Context, request *proto.RegisterRequest) (*proto.RegisterResponse, error) {
 
+	phoneNumber := helpers.TrimPhoneNumber(request.GetPhoneNumber(), request.GetPhoneCode())
+
 	user := &proto.User{
 		FirstName: request.GetFirstName(),
 		LastName:  request.GetLastName(),
 		Email:     request.GetEmail(),
-		Phone:     request.GetPhoneNumber(),
+		Phone:     phoneNumber,
 		PhoneCode: request.GetPhoneCode(),
 		Password:  request.GetPassword(),
 		Address:   request.GetAddress(),
@@ -33,9 +38,27 @@ func (s *Server) Register(ctx context.Context, request *proto.RegisterRequest) (
 		return nil, err
 	}
 
+	userByEmailRequest := &proto.GetUserDetailsByEmailRequest{
+		Email: user.Email,
+	}
+
+	userByEmailResponse, err := s.UserService.GetUserDetailsByEmail(ctx, userByEmailRequest)
+	if err != nil {
+		helpers.LogEvent("ERROR", fmt.Sprintf("user not saved: %v", err))
+		return nil, status.Errorf(codes.Internal, "user not saved", err)
+	}
+
+	res := userByEmailResponse.GetResponse()
+
+	userObject := &models.User{}
+	err = json.Unmarshal(res, userObject)
+	if err != nil {
+		helpers.LogEvent("ERROR", fmt.Sprintf("error unmarshalling user %v", err))
+		return nil, status.Errorf(codes.Internal, "error unmarshalling user", err)
+	}
+
 	// generate otp
-	// TODO: generate random otps
-	randomOtp := "123456"
+	randomOtp := strconv.Itoa(helpers.RandomOtp())
 	requestId, err := uuid.NewRandom()
 	if err != nil {
 		helpers.LogEvent("ERROR", "failed to create requestId for email verification")
@@ -47,12 +70,21 @@ func (s *Server) Register(ctx context.Context, request *proto.RegisterRequest) (
 		Email: user.Email,
 	}
 
-	fmt.Println(requestId.String())
 	// store otp in cache for 10 minutes using requestId as the key
 	if err := s.RedisCache.SaveOTP(requestId.String(), "REG", ev); err != nil {
 		helpers.LogEvent("ERROR", fmt.Sprintf("failed to save otp to redis: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to save otp")
 	}
+
+	// create queue message and send to the notification queue
+	queueMessage := models.QueueMessage{
+		Otp:              randomOtp,
+		User:             *userObject,
+		MessageType:      "reg_email_verification",
+		NotificationType: "email",
+	}
+
+	s.RabbitMQ.Publish("notification_queue", queueMessage)
 
 	registerResponse := &proto.RegisterResponse{
 		Message:   "An OTP has been sent to your email.",

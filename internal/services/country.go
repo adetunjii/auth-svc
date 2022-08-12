@@ -4,10 +4,11 @@ import (
 	"context"
 	//"dh-backend-auth-sv/internal/proto"
 	"encoding/json"
-	"github.com/Adetunjii/protobuf-mono/go/pkg/proto"
+	"log"
+
+	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"log"
 )
 
 func (s *Server) GetAllCountries(ctx context.Context, req *proto.GetAllCountryRequest) (*proto.GetAllCountryResponse, error) {
