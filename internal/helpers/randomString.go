@@ -25,11 +25,10 @@ func RandomOtp() int {
 	return RandInt(100000, 999999)
 }
 
+// for nigerian phone number, trim the 0 in front for consistency
 func TrimPhoneNumber(phoneNumber string, phoneCode string) string {
-
 	if phoneCode == "234" && phoneNumber[0] == '0' {
 		return phoneNumber[1:]
 	}
-
 	return phoneNumber
 }

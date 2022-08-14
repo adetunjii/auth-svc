@@ -12,12 +12,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/golang-jwt/jwt"
-
-	//"dh-backend-auth-sv/internal/proto"
 	"encoding/json"
 	"fmt"
 	"strings"
+
+	"github.com/golang-jwt/jwt"
 
 	"github.com/google/uuid"
 	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
@@ -33,8 +32,6 @@ type Server struct {
 	jwtKey      *rsa.PrivateKey
 	UserService proto.UserServiceClient
 }
-
-// TODO: refactor duplicate code
 
 func (s *Server) Login(ctx context.Context, request *proto.LoginRequest) (*proto.LoginResponse, error) {
 	login := strings.TrimSpace(request.GetLogin())
@@ -66,8 +63,6 @@ func (s *Server) Login(ctx context.Context, request *proto.LoginRequest) (*proto
 	if err != nil {
 		helpers.LogEvent("ERROR", fmt.Sprintf("%s: %s", helpers.ErrGenerateHashPassword, err.Error()))
 	}
-
-	//fmt.Println(hashedPassword)
 
 	var userByEmailResponse *proto.GetUserDetailsByEmailResponse
 	var userByPhoneResponse *proto.GetUserByPhoneNumberResponse
@@ -125,24 +120,15 @@ func (s *Server) Login(ctx context.Context, request *proto.LoginRequest) (*proto
 	isPhoneVerified := user.IsPhoneVerified
 
 	if !isEmailVerified || !isPhoneVerified {
-		helpers.LogEvent("ERROR", fmt.Sprint("Please verify account to proceed!"))
+		helpers.LogEvent("ERROR", "Please verify account to proceed!")
 
-		if !isEmailVerified {
-			response := &proto.LoginResponse{
-				Message:     "Please verify your email to proceed",
-				VerifyEmail: true,
-			}
-
-			return response, nil
+		response := &proto.LoginResponse{
+			Message:         "Please verify your email to proceed",
+			RequestId:       "",
+			IsEmailVerified: convertToBooleanString(isEmailVerified),
+			IsPhoneVerified: convertToBooleanString(isPhoneVerified),
 		}
-		if !isPhoneVerified {
-			response := &proto.LoginResponse{
-				Message:     "Please verify your phone number to proceed",
-				VerifyPhone: true,
-			}
-
-			return response, nil
-		}
+		return response, nil
 
 	}
 
@@ -295,9 +281,7 @@ func (s *Server) LoginNoVerification(ctx context.Context, request *proto.LoginRe
 	if !helpers.CheckPasswordHash(password, []byte(user.HashedPassword)) {
 		return nil, status.Error(codes.NotFound, "user password incorrect")
 	}
-
 	fmt.Println(user)
-
 	if !user.IsEmailVerified || !user.IsPhoneVerified {
 		return nil, status.Errorf(codes.PermissionDenied, "Please verify account to proceed")
 	}
@@ -352,4 +336,11 @@ func (s *Server) LoginNoVerification(ctx context.Context, request *proto.LoginRe
 	}
 	return loginResponse, nil
 
+}
+
+func convertToBooleanString(b bool) string {
+	if b {
+		return "true"
+	}
+	return "false"
 }

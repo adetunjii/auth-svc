@@ -39,7 +39,7 @@ func (c *client) Connect(dialUrl string) *connection {
 		log.Fatalf("failed to open a channel %v", err)
 	}
 
-	log.Println("successfully connected to rabbitMQ")
+	log.Printf("successfully connected to rabbitMQ on %v", dialUrl)
 	return &connection{
 		Connection: conn,
 		Channel:    channel,

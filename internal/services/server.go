@@ -13,7 +13,6 @@ import (
 	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	_ "google.golang.org/grpc/reflection"
 )
 
 func Start() {
@@ -45,7 +44,7 @@ func Start() {
 	}
 
 	defer conn.Close()
-	log.Println("connected to user service....")
+	log.Printf("connected to user service on %v", userServiceUrl)
 
 	userService := proto.NewUserServiceClient(conn)
 
