@@ -4,6 +4,8 @@ import (
 	"dh-backend-auth-sv/internal/db/postgres"
 	"dh-backend-auth-sv/internal/db/rediscache"
 	"dh-backend-auth-sv/internal/helpers"
+	"dh-backend-auth-sv/internal/rabbitMQ"
+	"fmt"
 	"time"
 )
 
@@ -29,8 +31,9 @@ type Config struct {
 }
 
 type Service struct {
-	DB    *postgres.PostgresDB
-	Redis *rediscache.Redis
+	DB       *postgres.PostgresDB
+	Redis    *rediscache.Redis
+	RabbitMQ *rabbitMQ.RabbitMQ
 }
 
 func LoadConfig() *Service {
@@ -65,6 +68,24 @@ func LoadConfig() *Service {
 	redis := rediscache.New(redisConfig)
 
 	services.Redis = redis
+
+	var rabbitMQUrl string
+	if config.CloudAMQPUrl == "" {
+		rabbitMQUrl = fmt.Sprintf(
+			"amqp://%s:%s@%s:%s",
+			config.RabbitMQUser,
+			config.RabbitMQPass,
+			config.RabbitMQHost,
+			config.RabbitMQPort,
+		)
+
+	} else {
+		rabbitMQUrl = config.CloudAMQPUrl
+	}
+
+	rabbitMQ := rabbitMQ.New(rabbitMQUrl)
+
+	services.RabbitMQ = rabbitMQ
 
 	return services
 }

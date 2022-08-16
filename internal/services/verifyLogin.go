@@ -4,17 +4,19 @@ import (
 	"context"
 	"dh-backend-auth-sv/internal/helpers"
 	"dh-backend-auth-sv/internal/models"
+
 	//"dh-backend-auth-sv/internal/proto"
 	"encoding/json"
 	"fmt"
-	"github.com/Adetunjii/protobuf-mono/go/pkg/proto"
-	"github.com/golang-jwt/jwt"
-	"github.com/google/uuid"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"log"
 	"os"
 	"time"
+
+	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
+	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *Server) VerifyLogin(ctx context.Context, req *proto.VerifyLoginRequest) (*proto.VerifyLoginResponse, error) {
@@ -68,7 +70,7 @@ func (s *Server) VerifyLogin(ctx context.Context, req *proto.VerifyLoginRequest)
 		}
 
 		userRequestByPhone := proto.GetUserByPhoneNumberRequest{
-			Phone:     login,
+			Phone:     helpers.TrimPhoneNumber(login, phoneCode),
 			PhoneCode: phoneCode,
 		}
 
