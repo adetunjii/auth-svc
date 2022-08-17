@@ -49,7 +49,7 @@ func (s *Server) InitEmailVerification(ctx context.Context, request *proto.InitE
 	}
 
 	// store otp in cache for 10 minutes using requestId as the key
-	if err := s.RedisCache.SaveOTP(requestId.String(), models.OtpType(otpType), ev); err != nil {
+	if err := s.RedisCache.SaveOTP(requestId.String(), models.OtpType(otpType.String()), ev); err != nil {
 		helpers.LogEvent("ERROR", fmt.Sprintf("failed to save otp to redis: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to save otp")
 	}
