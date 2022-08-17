@@ -59,7 +59,7 @@ func (s *Server) InitPhoneVerification(ctx context.Context, request *proto.InitP
 		PhoneCode: user.PhoneCode,
 	}
 
-	if err := s.RedisCache.SaveOTP(requestId.String(), proto.OtpType_REG.String(), ov); err != nil {
+	if err := s.RedisCache.SaveOTP(requestId.String(), models.OtpType("REG"), ov); err != nil {
 		helpers.LogEvent("ERROR", fmt.Sprintf("failed to save otp to redis: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to save otp")
 	}
@@ -85,7 +85,7 @@ func (s *Server) VerifyPhone(ctx context.Context, request *proto.PhoneVerificati
 	requestId := request.GetRequestID()
 	otpType := request.GetType()
 
-	data, err := s.RedisCache.GetOTP(requestId, otpType.String())
+	data, err := s.RedisCache.GetOTP(requestId, models.OtpType(otpType.String()))
 	if err != nil {
 		helpers.LogEvent("ERROR", fmt.Sprintf("%v", err))
 		return nil, status.Errorf(codes.InvalidArgument, "invalid request id!")

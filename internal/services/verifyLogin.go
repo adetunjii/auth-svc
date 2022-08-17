@@ -28,7 +28,7 @@ func (s *Server) VerifyLogin(ctx context.Context, req *proto.VerifyLoginRequest)
 
 	user := &models.User{}
 
-	data, err := s.RedisCache.GetOTP(requestId, otpType.String())
+	data, err := s.RedisCache.GetOTP(requestId, models.OtpType(otpType.String()))
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "otp has expired, please try again!")
 	}
@@ -36,8 +36,6 @@ func (s *Server) VerifyLogin(ctx context.Context, req *proto.VerifyLoginRequest)
 	if otp != data.Otp {
 		return nil, status.Errorf(codes.InvalidArgument, "otp is incorrect")
 	}
-
-	fmt.Println(helpers.IsEmailValid(login))
 
 	if helpers.IsEmailValid(login) {
 
@@ -51,7 +49,7 @@ func (s *Server) VerifyLogin(ctx context.Context, req *proto.VerifyLoginRequest)
 
 		res, err := s.UserService.GetUserDetailsByEmail(context.Background(), &userRequest)
 		if err != nil {
-			helpers.LogEvent("ERROR", fmt.Sprintf("user with this email does not exist!"))
+			helpers.LogEvent("ERROR", fmt.Sprintf("user with this email does not exist: %v", err))
 			return nil, status.Errorf(codes.NotFound, "user with this email does not exist!")
 		}
 
@@ -138,21 +136,4 @@ func (s *Server) VerifyLogin(ctx context.Context, req *proto.VerifyLoginRequest)
 	}
 
 	return loginResponse, nil
-}
-
-func toUserProtoObject(a interface{}) (*proto.User, error) {
-	var user *proto.User
-
-	j, err := json.Marshal(a)
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal(j, user)
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
-
 }

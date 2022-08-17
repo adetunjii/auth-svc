@@ -2,12 +2,9 @@ package services
 
 import (
 	"context"
-
-	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
-
-	//"dh-backend-auth-sv/internal/proto"
 	"log"
 
+	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 

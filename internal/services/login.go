@@ -98,7 +98,7 @@ func (s *Server) Login(ctx context.Context, request *proto.LoginRequest) (*proto
 		}
 		userByPhoneResponse, err = s.UserService.GetUserDetailsByPhoneNumber(context.Background(), &userRequestByPhone)
 		if err != nil {
-			helpers.LogEvent("ERROR", fmt.Sprint("user with this phone number does not exist"))
+			helpers.LogEvent("ERROR", "user with this phone number does not exist")
 			return nil, status.Errorf(codes.NotFound, "invalid user")
 		}
 
@@ -111,10 +111,8 @@ func (s *Server) Login(ctx context.Context, request *proto.LoginRequest) (*proto
 	}
 
 	if !helpers.CheckPasswordHash(password, []byte(user.HashedPassword)) {
-		return nil, status.Error(codes.NotFound, "user password incorrect")
+		return nil, status.Error(codes.NotFound, "invalid credentials")
 	}
-
-	fmt.Println(user)
 
 	isEmailVerified := user.IsEmailVerified
 	isPhoneVerified := user.IsPhoneVerified
@@ -124,9 +122,13 @@ func (s *Server) Login(ctx context.Context, request *proto.LoginRequest) (*proto
 
 		response := &proto.LoginResponse{
 			Message:         "Please verify your email to proceed",
-			RequestId:       "",
 			IsEmailVerified: convertToBooleanString(isEmailVerified),
 			IsPhoneVerified: convertToBooleanString(isPhoneVerified),
+			User: &proto.User{
+				Email:     user.Email,
+				Phone:     user.PhoneNumber,
+				PhoneCode: user.PhoneCode,
+			},
 		}
 		return response, nil
 
@@ -225,15 +227,12 @@ func (s *Server) LoginNoVerification(ctx context.Context, request *proto.LoginRe
 	if len(password) < 8 {
 		return nil, status.Error(codes.InvalidArgument, "Password must be at least 8 characters long")
 	}
-	_, err := helpers.GenerateHashPassword(password)
-	if err != nil {
-		helpers.LogEvent("ERROR", fmt.Sprintf("%s: %s", helpers.ErrGenerateHashPassword, err.Error()))
-	}
 
 	//fmt.Println(hashedPassword)
 
 	var userByEmailResponse *proto.GetUserDetailsByEmailResponse
 	var userByPhoneResponse *proto.GetUserByPhoneNumberResponse
+	var err error
 	user := &models.User{}
 
 	if helpers.IsEmailValid(login) {
@@ -276,15 +275,14 @@ func (s *Server) LoginNoVerification(ctx context.Context, request *proto.LoginRe
 			helpers.LogEvent("ERROR", fmt.Sprintf("cannot unmarshal user %v", err))
 			return nil, status.Errorf(codes.Internal, "cannot process user info")
 		}
+
 	}
 
 	if !helpers.CheckPasswordHash(password, []byte(user.HashedPassword)) {
-		return nil, status.Error(codes.NotFound, "user password incorrect")
+		return nil, status.Error(codes.NotFound, "invalid credentials")
 	}
+
 	fmt.Println(user)
-	if !user.IsEmailVerified || !user.IsPhoneVerified {
-		return nil, status.Errorf(codes.PermissionDenied, "Please verify account to proceed")
-	}
 
 	now := time.Now()
 	exp := now.Add(time.Hour * 24)

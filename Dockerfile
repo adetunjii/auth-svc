@@ -19,8 +19,6 @@ COPY . .
 RUN go build -o auth-sv
 
 
-
-
 # Start fresh from a smaller image
 FROM alpine:3.9
 RUN apk add ca-certificates

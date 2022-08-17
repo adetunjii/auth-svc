@@ -6,9 +6,7 @@ import (
 	"dh-backend-auth-sv/internal/models"
 	"encoding/json"
 	"fmt"
-	"strconv"
 
-	"github.com/google/uuid"
 	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -58,37 +56,37 @@ func (s *Server) Register(ctx context.Context, request *proto.RegisterRequest) (
 	}
 
 	// generate otp
-	randomOtp := strconv.Itoa(helpers.RandomOtp())
-	requestId, err := uuid.NewRandom()
-	if err != nil {
-		helpers.LogEvent("ERROR", "failed to create requestId for email verification")
-		return nil, status.Errorf(codes.Internal, "failed to create requestId for email verification")
-	}
+	// randomOtp := strconv.Itoa(helpers.RandomOtp())
+	// requestId, err := uuid.NewRandom()
+	// if err != nil {
+	// 	helpers.LogEvent("ERROR", "failed to create requestId for email verification")
+	// 	return nil, status.Errorf(codes.Internal, "failed to create requestId for email verification")
+	// }
 
-	ev := &models.OtpVerification{
-		Otp:   randomOtp,
-		Email: user.Email,
-	}
+	// ev := &models.OtpVerification{
+	// 	Otp:   randomOtp,
+	// 	Email: user.Email,
+	// }
 
-	// store otp in cache for 10 minutes using requestId as the key
-	if err := s.RedisCache.SaveOTP(requestId.String(), "REG", ev); err != nil {
-		helpers.LogEvent("ERROR", fmt.Sprintf("failed to save otp to redis: %v", err))
-		return nil, status.Errorf(codes.Internal, "failed to save otp")
-	}
+	// // store otp in cache for 10 minutes using requestId as the key
+	// if err := s.RedisCache.SaveOTP(requestId.String(), "REG", ev); err != nil {
+	// 	helpers.LogEvent("ERROR", fmt.Sprintf("failed to save otp to redis: %v", err))
+	// 	return nil, status.Errorf(codes.Internal, "failed to save otp")
+	// }
 
 	// create queue message and send to the notification queue
-	queueMessage := models.QueueMessage{
-		Otp:              randomOtp,
-		User:             *userObject,
-		MessageType:      "reg_email_verification",
-		NotificationType: "email",
-	}
+	// queueMessage := models.QueueMessage{
+	// 	Otp:              randomOtp,
+	// 	User:             *userObject,
+	// 	MessageType:      "reg_email_verification",
+	// 	NotificationType: "email",
+	// }
 
-	s.RabbitMQ.Publish("notification_queue", queueMessage)
+	// s.RabbitMQ.Publish("notification_queue", queueMessage)
 
 	registerResponse := &proto.RegisterResponse{
-		Message:   "An OTP has been sent to your email.",
-		RequestId: requestId.String(),
+		Message: "An OTP has been sent to your email.",
+		// RequestId: requestId.String(),
 	}
 
 	return registerResponse, nil

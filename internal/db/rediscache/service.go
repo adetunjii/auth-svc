@@ -65,19 +65,29 @@ func (r *Redis) GetRoleChannels(key string) []models.UserRole {
 	return user
 }
 
-func (r *Redis) SaveOTP(key string, otpType string, value any) error {
+func (r *Redis) SaveOTP(key string, otpType models.OtpType, value any) error {
 	json, err := json.Marshal(value)
 	if err != nil {
 		return fmt.Errorf("error parsing value")
 	}
 
-	redisKey := fmt.Sprintf("%s/%s", otpType, key)
+	var redisKey string
+
+	switch otpType {
+	case models.LOGIN:
+		redisKey = fmt.Sprintf("LOGIN/%s", key)
+	case models.REG:
+		redisKey = fmt.Sprintf("REG/%s", key)
+	case models.RESET_PASSWORD:
+		redisKey = fmt.Sprintf("RESET_PASSWORD/%s", key)
+	default:
+		return fmt.Errorf("invalid otp type")
+	}
 
 	return r.client.Set(context.Background(), redisKey, string(json), 10*time.Minute).Err()
 }
 
-func (r *Redis) GetOTP(key string, otpType string) (*models.OtpVerification, error) {
-	//response := &services.EmailVerification{}
+func (r *Redis) GetOTP(key string, otpType models.OtpType) (*models.OtpVerification, error) {
 	response := &models.OtpVerification{}
 
 	redisKey := fmt.Sprintf("%s/%s", otpType, key)
@@ -91,11 +101,11 @@ func (r *Redis) GetOTP(key string, otpType string) (*models.OtpVerification, err
 	if err != nil {
 		return response, err
 	}
-	del, err := r.client.Del(context.Background(), redisKey).Result()
-	if err != nil {
-		return response, err
-	}
-	fmt.Println(del)
+	// del, err := r.client.Del(context.Background(), redisKey).Result()
+	// if err != nil {
+	// 	return response, err
+	// }
+	// fmt.Println(del)
 
 	return response, nil
 }
