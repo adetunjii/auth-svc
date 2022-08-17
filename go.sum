@@ -522,6 +522,8 @@ gitlab.com/grpc-buffer/proto v0.0.0-20220817153529-1e5f151bbb79 h1:WoEhlf9VxVgR1
 gitlab.com/grpc-buffer/proto v0.0.0-20220817153529-1e5f151bbb79/go.mod h1:a1RYztjQFr3CAU5ewy+vFXR8Wj5u7LBhQS5uHUMYJvM=
 gitlab.com/grpc-buffer/proto v0.0.0-20220817155655-085429c136dd h1:ywH+hAm6ZyaNzULaFA+uQqG3TvgOIkiCVcJorvuigsw=
 gitlab.com/grpc-buffer/proto v0.0.0-20220817155655-085429c136dd/go.mod h1:a1RYztjQFr3CAU5ewy+vFXR8Wj5u7LBhQS5uHUMYJvM=
+gitlab.com/grpc-buffer/proto v0.0.0-20220817184340-062feb7d7135 h1:2gnn/iXH7bmDQNvnhbUpZXjNUDY038K0My+qc9+bYno=
+gitlab.com/grpc-buffer/proto v0.0.0-20220817184340-062feb7d7135/go.mod h1:a1RYztjQFr3CAU5ewy+vFXR8Wj5u7LBhQS5uHUMYJvM=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
 go.opencensus.io v0.22.0/go.mod h1:+kGneAE2xo2IficOXnaByMWTGM9T73dGwxeWcUqIpI8=
 go.opencensus.io v0.22.2/go.mod h1:yxeiOL68Rb0Xd1ddK5vPZ/oVn4vY4Ynel7k9FzqtOIw=

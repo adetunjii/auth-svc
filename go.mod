@@ -14,7 +14,7 @@ require (
 	github.com/rabbitmq/amqp091-go v1.4.0
 	github.com/spf13/viper v1.12.0
 	github.com/stretchr/testify v1.8.0
-	gitlab.com/grpc-buffer/proto v0.0.0-20220817155655-085429c136dd
+	gitlab.com/grpc-buffer/proto v0.0.0-20220817184340-062feb7d7135
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
 	golang.org/x/net v0.0.0-20220812174116-3211cb980234
 	google.golang.org/grpc v1.48.0
