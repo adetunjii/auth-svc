@@ -49,7 +49,7 @@ func (s *Server) InitEmailVerification(ctx context.Context, request *proto.InitE
 	}
 
 	// store otp in cache for 10 minutes using requestId as the key
-	if err := s.RedisCache.SaveOTP(requestId.String(), otpType.String(), ev); err != nil {
+	if err := s.RedisCache.SaveOTP(requestId.String(), models.OtpType(otpType.String()), ev); err != nil {
 		helpers.LogEvent("ERROR", fmt.Sprintf("failed to save otp to redis: %v", err))
 		return nil, status.Errorf(codes.Internal, "failed to save otp")
 	}
@@ -74,7 +74,7 @@ func (s *Server) VerifyEmail(ctx context.Context, request *proto.EmailVerificati
 	requestId := request.GetRequestID()
 	otpType := request.GetType()
 
-	data, err := s.RedisCache.GetOTP(requestId, otpType.String())
+	data, err := s.RedisCache.GetOTP(requestId, models.OtpType(otpType.String()))
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "otp has expired, please try again!")
 	}
