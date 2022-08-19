@@ -191,8 +191,10 @@ func (s *Server) Login(ctx context.Context, request *proto.LoginRequest) (*proto
 		s.RabbitMQ.Publish("notification_queue", queueMessage)
 
 		response := &proto.LoginResponse{
-			Message:   "An otp has been sent to your phone number",
-			RequestId: requestId.String(),
+			Message:         "An otp has been sent to your phone number",
+			RequestId:       requestId.String(),
+			IsEmailVerified: convertToBooleanString(isEmailVerified),
+			IsPhoneVerified: convertToBooleanString(isPhoneVerified),
 		}
 
 		return response, nil
