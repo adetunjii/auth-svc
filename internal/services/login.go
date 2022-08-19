@@ -171,7 +171,10 @@ func (s *Server) Login(ctx context.Context, request *proto.LoginRequest) (*proto
 			NotificationType: "email",
 		}
 
-		s.RabbitMQ.Publish("notification_queue", queueMessage)
+		err := s.RabbitMQ.Publish("notification_queue", queueMessage)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "verification alert not sent")
+		}
 
 		response := &proto.LoginResponse{
 			Message:         "An otp has been sent to your email",
