@@ -131,7 +131,6 @@ func (s *Server) Login(ctx context.Context, request *proto.LoginRequest) (*proto
 			},
 		}
 		return response, nil
-
 	}
 
 	randomOtp := strconv.Itoa(helpers.RandomOtp())
@@ -172,11 +171,16 @@ func (s *Server) Login(ctx context.Context, request *proto.LoginRequest) (*proto
 			NotificationType: "email",
 		}
 
-		s.RabbitMQ.Publish("notification_queue", queueMessage)
+		err := s.RabbitMQ.Publish("notification_queue", queueMessage)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "verification alert not sent")
+		}
 
 		response := &proto.LoginResponse{
-			Message:   "An otp has been sent to your email",
-			RequestId: requestId.String(),
+			Message:         "An otp has been sent to your email",
+			RequestId:       requestId.String(),
+			IsEmailVerified: convertToBooleanString(isEmailVerified),
+			IsPhoneVerified: convertToBooleanString(isPhoneVerified),
 		}
 		return response, nil
 	} else {
@@ -188,13 +192,19 @@ func (s *Server) Login(ctx context.Context, request *proto.LoginRequest) (*proto
 			NotificationType: "sms",
 		}
 
-		s.RabbitMQ.Publish("notification_queue", queueMessage)
-
-		response := &proto.LoginResponse{
-			Message:   "An otp has been sent to your phone number",
-			RequestId: requestId.String(),
+		err := s.RabbitMQ.Publish("notification_queue", queueMessage)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "verification alert not sent!")
 		}
 
+		response := &proto.LoginResponse{
+			Message:         "An otp has been sent to your phone number",
+			RequestId:       requestId.String(),
+			IsEmailVerified: convertToBooleanString(isEmailVerified),
+			IsPhoneVerified: convertToBooleanString(isPhoneVerified),
+		}
+
+		fmt.Println(response)
 		return response, nil
 	}
 }

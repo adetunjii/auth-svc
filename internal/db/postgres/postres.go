@@ -3,9 +3,10 @@ package postgres
 import (
 	"dh-backend-auth-sv/internal/models"
 	"fmt"
+	"log"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log"
 )
 
 type Config struct {
@@ -51,7 +52,14 @@ func (postgresDB *PostgresDB) Connect(config *Config) error {
 	postgresDB.DB = db
 
 	//Migrate the schema
-	err = postgresDB.DB.AutoMigrate(&models.Role{}, &models.Interest{}, &models.User{}, &models.UserRole{}, &models.Country{})
+	err = postgresDB.DB.AutoMigrate(
+		&models.Role{},
+		&models.Interest{},
+		&models.User{},
+		&models.UserRole{},
+		&models.Country{},
+		&models.Activities{},
+	)
 	//err = postgresDB.DB.AutoMigrate(&models.Country{})
 	if err != nil {
 		return err
