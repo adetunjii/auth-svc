@@ -35,7 +35,8 @@ COPY --from=build_base /tmp/go-sample-app/migrate /app/migrate
 
 # Set the Current Working Directory inside the container
 WORKDIR /app
-
+COPY start.sh .
+COPY internal/db/migration ./migration
 # COPY app.env.example app.env
 
 # This container exposes port 8081 to the outside world
@@ -43,3 +44,5 @@ EXPOSE 50092
 
 # Run the binary program produced by `go install`
 CMD ["./go-app"]
+
+ENTRYPOINT [ "/app/start.sh" ]
