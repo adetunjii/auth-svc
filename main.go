@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/base64"
 	"fmt"
 	"log"
 
@@ -12,9 +11,6 @@ import (
 )
 
 func main() {
-
-	js := "UserJwtSecretKeyHasToBe32CharactersLong"
-	fmt.Println(base64.StdEncoding.EncodeToString([]byte(js)))
 
 	viper.AddConfigPath(".")
 	viper.SetConfigName("app")
