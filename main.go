@@ -1,17 +1,16 @@
 package main
 
 import (
-	"dh-backend-auth-sv/internal/services"
+	"fmt"
 	"log"
 
 	"github.com/spf13/viper"
+	"gitlab.com/dh-backend/auth-service/config"
+	grpcHandler "gitlab.com/dh-backend/auth-service/internal/handler/grpc"
+	"gitlab.com/dh-backend/auth-service/pkg/logging"
 )
 
 func main() {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	//if err := godotenv.Load(); err != nil {
-	//	log.Printf("Error loading app.env with godotenv: %s", err)
-	//}
 
 	viper.AddConfigPath(".")
 	viper.SetConfigName("app")
@@ -25,5 +24,15 @@ func main() {
 		}
 	}
 
-	services.Start()
+	grpcPort := fmt.Sprintf(":%s", viper.GetString("PORT"))
+	if grpcPort == ":" || grpcPort == "" {
+		grpcPort = ":8080"
+	}
+
+	zapSugarLogger := logging.NewZapSugarLogger()
+	logger := logging.NewLogger(zapSugarLogger)
+	services := config.LoadConfig(logger)
+
+	grpcServer := grpcHandler.New(services.Repository, services.Redis, services.RabbitMQ, services.JwtFactory, logger)
+	grpcServer.Start(grpcPort)
 }

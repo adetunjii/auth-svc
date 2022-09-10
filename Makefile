@@ -1,11 +1,42 @@
-run: |
-	gofmt -w .
+dsn?=
+dbUser?=
+dbPassword?=
+dbName?=
+dbHost?=
+dbPort?=
+password?=
+migration_name?=
+version?=
+
+
+.PHONY: migrateup
+create_migrate: 
+	migrate create -ext sql -dir internal/db/migration -seq $(migration_name)
+
+.PHONY: migrateup
+migrateup:
+	migrate -path internal/db/migration -database $(dsn) -verbose up
+
+# dsn?= the database to run the migration. This is option is to be set from the terminal for security reasons.
+# (Optional) version?=.... to rollback to a previous version in a case where a migration fails.
+.PHONY: migratedown
+migratedown:
+	if [ $(version) ]; then \
+		migrate -path internal/db/migration -database "postgresql://$(dbUser):$(dbPassword)@$(dbHost):$(dbPassword)/$(dbName)?sslmode=disable" -verbose force $(version); \
+	else \
+		migrate -path internal/db/migration -database "postgresql://$(dbUser):$(dbPassword)@$(dbHost):$(dbPassword)/$(dbName)?sslmode=disable" -verbose down; \
+	fi 
+
+.PHONY: run
+run:
 	go run main.go
 
-mock-service-user:
-	mockgen -source=service/user.go -destination=service/user_mock.go -package=service
+.PHONY: test
+test:
+	go test -v -cover ./...
 
-gen:
-	protoc --go_out=internal/proto --go_opt=paths=source_relative \
-    --go-grpc_out=internal/proto --go-grpc_opt=paths=source_relative \
-    --proto_path=internal/proto internal/userproto/*.proto
+# .PHONY: test-coverage
+test-coverage: |
+  go test -v ./... -covermode=count -coverpkg=./... -coverprofile coverage/coverage.out 
+  go tool cover -html coverage/coverage.out -o coverage/coverage.html 
+  open coverage/coverage.html 
