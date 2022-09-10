@@ -36,8 +36,7 @@ test:
 	go test -v -cover ./...
 
 # .PHONY: test-coverage
-test-coverage:
-#   go test -v ./... -covermode=count -coverpkg=./... -coverprofile coverage/coverage.out |
-#   go tool cover -html coverage/coverage.out -o coverage/coverage.html |
-#   open coverage/coverage.html 
-# postgresql://sonar_user_checklos:S0N4RQUB3!@#$@154.12.237.18:31373/dh-user?sslmode=enable
+test-coverage: |
+  go test -v ./... -covermode=count -coverpkg=./... -coverprofile coverage/coverage.out 
+  go tool cover -html coverage/coverage.out -o coverage/coverage.html 
+  open coverage/coverage.html 

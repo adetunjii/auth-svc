@@ -1,3 +1,10 @@
+mock_*
+.vscode
+.idea
 app.env
 .env
-vendor/
+*.env
+testimg.png
+ds_store
+.DS_Store
+**.DS_Store

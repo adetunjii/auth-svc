@@ -23,6 +23,71 @@ func TestCreateCountry(t *testing.T) {
 }
 
 func TestListCountries(t *testing.T) {
+
+	c := []*model.Country{
+		{
+			Name:      "Nigeria",
+			Iso:       "NG",
+			PhoneCode: "234",
+			NiceName:  "Nigeria",
+			Currency:  "NGN",
+			NumCode:   "566",
+		},
+		{
+			Name:      "Ghana",
+			Iso:       "GH",
+			PhoneCode: "233",
+			NiceName:  "Ghana",
+			Currency:  "GHS",
+			NumCode:   "288",
+		},
+		{
+			Name:      "Cameroon",
+			Iso:       "CM",
+			PhoneCode: "237",
+			NiceName:  "Cameroon",
+			Currency:  "CFA",
+			NumCode:   "120",
+		},
+		{
+			Name:      "Kenya",
+			Iso:       "KE",
+			PhoneCode: "254",
+			NiceName:  "Kenya",
+			Currency:  "KES",
+			NumCode:   "404",
+		},
+		// {
+		// 	Name:      "Canada",
+		// 	Iso:       "CA",
+		// 	PhoneCode: "1",
+		// 	NiceName:  "Canada",
+		// 	Currency:  "CAD",
+		// 	NumCode:   "124",
+		// },
+		{
+			Name:      "United States",
+			Iso:       "US",
+			PhoneCode: "1",
+			NiceName:  "United States",
+			Currency:  "USD",
+			NumCode:   "840",
+		},
+		{
+			Name:      "United Kingdom",
+			Iso:       "UK",
+			PhoneCode: "44",
+			NiceName:  "United Kingdom",
+			Currency:  "GBP",
+			NumCode:   "826",
+		},
+	}
+
+	for i := 0; i < len(c); i++ {
+		err := testRepo.CreateCountry(context.Background(), c[i])
+		require.NoError(t, err)
+	}
+
 	countries, err := testRepo.ListCountries(context.Background())
 	require.NoError(t, err)
 	require.NotEmpty(t, countries)

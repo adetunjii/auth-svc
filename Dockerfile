@@ -25,7 +25,6 @@ RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.15.1/
 RUN go build -o auth-sv
 
 
-
 # Start fresh from a smaller image
 FROM alpine:3.9
 RUN apk add ca-certificates
@@ -45,4 +44,4 @@ EXPOSE 50092
 # Run the binary program produced by `go install`
 CMD ["./go-app"]
 
-ENTRYPOINT [ "/app/start.sh" ]
+# ENTRYPOINT [ "/app/start.sh" ]
