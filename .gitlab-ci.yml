@@ -98,7 +98,6 @@ build-push-docker-image-job:
         tag=":$CI_COMMIT_REF_SLUG"
         echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
       fi
-    - ls
     - docker build --pull -t "$CS_DEFAULT_BRANCH_IMAGE" .
     - docker push "$CS_DEFAULT_BRANCH_IMAGE"
 
