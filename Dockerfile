@@ -42,7 +42,7 @@ COPY internal/db/migration ./migration
 # This container exposes port 8081 to the outside world
 EXPOSE 50092
 
+ENTRYPOINT [ "/app/start.sh" ]
+
 # Run the binary program produced by `go install`
 CMD ["./go-app"]
-
-ENTRYPOINT [ "/app/start.sh" ]
