@@ -1,4 +1,4 @@
-package grpcHandler
+package grpc
 
 import (
 	"fmt"
@@ -7,7 +7,9 @@ import (
 	"os"
 	"os/signal"
 
+	"gitlab.com/dh-backend/auth-service/config"
 	"gitlab.com/dh-backend/auth-service/internal/port"
+	"gitlab.com/dh-backend/auth-service/internal/services/oauth"
 	"gitlab.com/dh-backend/auth-service/internal/services/rabbitmq"
 	"gitlab.com/dh-backend/auth-service/internal/services/redis"
 	"gitlab.com/dh-backend/auth-service/internal/util"
@@ -17,21 +19,23 @@ import (
 )
 
 type Server struct {
-	Repository port.Repository
-	Redis      *redis.Redis
-	RabbitMQ   *rabbitmq.Connection
-	jwtFactory *util.JwtFactory
-	logger     port.AppLogger
+	Repository   port.Repository
+	Redis        *redis.Redis
+	RabbitMQ     *rabbitmq.Connection
+	jwtFactory   *util.JwtFactory
+	googleClient *oauth.GoogleClient
+	logger       port.AppLogger
 
 	proto.UnimplementedAuthServiceServer
 }
 
-func New(repository port.Repository, redis *redis.Redis, rabbitmq *rabbitmq.Connection, jwtFactory *util.JwtFactory, logger port.AppLogger) *Server {
+func New(service *config.Service, logger port.AppLogger) *Server {
 	return &Server{
-		Repository: repository,
-		Redis:      redis,
-		RabbitMQ:   rabbitmq,
-		logger:     logger,
+		Repository:   service.Repository,
+		Redis:        service.Redis,
+		RabbitMQ:     service.RabbitMQ,
+		googleClient: service.GoogleClient,
+		logger:       logger,
 	}
 }
 

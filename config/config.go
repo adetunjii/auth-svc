@@ -7,37 +7,40 @@ import (
 	"gitlab.com/dh-backend/auth-service/internal/db"
 	"gitlab.com/dh-backend/auth-service/internal/port"
 	"gitlab.com/dh-backend/auth-service/internal/repository"
+	"gitlab.com/dh-backend/auth-service/internal/services/oauth"
 	"gitlab.com/dh-backend/auth-service/internal/services/rabbitmq"
 	"gitlab.com/dh-backend/auth-service/internal/services/redis"
 	"gitlab.com/dh-backend/auth-service/internal/util"
 )
 
 type Config struct {
-	DbHost        string `mapstructure:"DB_HOST" json:"dbHost"`
-	DbPort        string `mapstructure:"DB_PORT" json:"dbPort"`
-	DbUser        string `mapstructure:"DB_USER" json:"dbUser"`
-	DbName        string `mapstructure:"DB_NAME" json:"dbName"`
-	DbPassword    string `mapstructure:"DB_PASSWORD" json:"dbPassword"`
-	DbUrl         string `mapstructure:"DB_URL" json:"dbUrl"`
-	RabbitMQHost  string `mapstructure:"RABBITMQ_HOST" json:"rabbitMQHost"`
-	RabbitMQPort  string `mapstructure:"RABBITMQ_PORT" json:"rabbitMQPort"`
-	RabbitMQUser  string `mapstructure:"RABBITMQ_USER" json:"rabbitMQUser"`
-	RabbitMQPass  string `mapstructure:"RABBITMQ_PASS" json:"rabbitMQPass"`
-	CloudAMQPUrl  string `mapstructure:"CLOUDAMQP_URL" json:"cloudAMQPUrl"`
-	RedisHost     string `mapstructure:"REDIS_HOST" json:"redisHost"`
-	RedisPort     string `mapstructure:"REDIS_PORT" json:"redisPort"`
-	RedisPassword string `mapstructure:"REDIS_PASSWORD" json:"redisPassword"`
-	AwsSecretID   string `mapstructure:"AWS_SECRET_ID" json:"awsSecretID"`
-	AwsSecretKey  string `mapstructure:"AWS_SECRET_KEY" json:"awsSecretKey"`
-	AwsRegion     string `mapstructure:"AWS_REGION" json:"awsRegion"`
-	JwtSecretKey  string `mapstructure:"JWT_SECRETKEY" json:"jwtSecretKey"`
+	DbHost             string   `mapstructure:"DB_HOST" json:"dbHost"`
+	DbPort             string   `mapstructure:"DB_PORT" json:"dbPort"`
+	DbUser             string   `mapstructure:"DB_USER" json:"dbUser"`
+	DbName             string   `mapstructure:"DB_NAME" json:"dbName"`
+	DbPassword         string   `mapstructure:"DB_PASSWORD" json:"dbPassword"`
+	DbUrl              string   `mapstructure:"DB_URL" json:"dbUrl"`
+	RabbitMQHost       string   `mapstructure:"RABBITMQ_HOST" json:"rabbitMQHost"`
+	RabbitMQPort       string   `mapstructure:"RABBITMQ_PORT" json:"rabbitMQPort"`
+	RabbitMQUser       string   `mapstructure:"RABBITMQ_USER" json:"rabbitMQUser"`
+	RabbitMQPass       string   `mapstructure:"RABBITMQ_PASS" json:"rabbitMQPass"`
+	CloudAMQPUrl       string   `mapstructure:"CLOUDAMQP_URL" json:"cloudAMQPUrl"`
+	RedisHost          string   `mapstructure:"REDIS_HOST" json:"redisHost"`
+	RedisPort          string   `mapstructure:"REDIS_PORT" json:"redisPort"`
+	RedisPassword      string   `mapstructure:"REDIS_PASSWORD" json:"redisPassword"`
+	JwtSecretKey       string   `mapstructure:"JWT_SECRETKEY" json:"jwtSecretKey"`
+	GoogleClientId     string   `mapstructure:"GOOGLE_CLIENT_ID" json:"googleClientId"`
+	GoogleClientSecret string   `mapstructure:"GOOGLE_CLIENT_SECRET" json:"googleClientSecret"`
+	GoogleUserScopes   []string `mapstructure:"GOOGLE_USER_SCOPES" json:"googleUserScopes"`
+	GoogleRedirectURL  string   `mapstructure:"GOOGLE_REDIRECT_URL" json:"googleRedirectURL"`
 }
 
 type Service struct {
-	Repository *repository.Repository
-	RabbitMQ   *rabbitmq.Connection
-	Redis      *redis.Redis
-	JwtFactory *util.JwtFactory
+	Repository   *repository.Repository
+	RabbitMQ     *rabbitmq.Connection
+	Redis        *redis.Redis
+	JwtFactory   *util.JwtFactory
+	GoogleClient *oauth.GoogleClient
 }
 
 func LoadConfig(logger port.AppLogger) *Service {
@@ -83,7 +86,6 @@ func LoadConfig(logger port.AppLogger) *Service {
 			config.RabbitMQHost,
 			config.RabbitMQPort,
 		)
-
 	} else {
 		rabbitMQUrl = config.CloudAMQPUrl
 	}
@@ -101,6 +103,9 @@ func LoadConfig(logger port.AppLogger) *Service {
 	}
 
 	services.JwtFactory = jwtFactory
+
+	googleClient := oauth.NewGoogleClient(config.GoogleClientId, config.GoogleClientSecret, config.GoogleUserScopes, config.GoogleRedirectURL, logger)
+	services.GoogleClient = googleClient
 
 	return services
 

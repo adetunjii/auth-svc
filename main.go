@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/viper"
 	"gitlab.com/dh-backend/auth-service/config"
-	grpcHandler "gitlab.com/dh-backend/auth-service/internal/handler/grpc"
+	grpchandler "gitlab.com/dh-backend/auth-service/internal/handler/grpc"
 	"gitlab.com/dh-backend/auth-service/pkg/logging"
 )
 
@@ -33,6 +33,6 @@ func main() {
 	logger := logging.NewLogger(zapSugarLogger)
 	services := config.LoadConfig(logger)
 
-	grpcServer := grpcHandler.New(services.Repository, services.Redis, services.RabbitMQ, services.JwtFactory, logger)
+	grpcServer := grpchandler.New(services, logger)
 	grpcServer.Start(grpcPort)
 }

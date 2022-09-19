@@ -1,4 +1,4 @@
-package grpcHandler
+package grpc
 
 import (
 	"context"
@@ -87,13 +87,17 @@ func (s *Server) VerifyEmail(ctx context.Context, request *proto.EmailVerificati
 
 	isEmailVerified := true
 
-	userPatch := model.UserPatch{
+	updates := &model.User{}
+	userPatch := &model.UserPatch{
 		IsEmailVerified: &isEmailVerified,
 	}
 
-	user.Patch(&userPatch)
+	if err := updates.Patch(userPatch); err != nil {
+		s.logger.Error("failed to update user", err)
+		return nil, status.Errorf(codes.Internal, "failed to update user")
+	}
 
-	s.Repository.UpdateUser(ctx, user.Id, user)
+	s.Repository.UpdateUser(ctx, user.Id, updates)
 	response := &proto.EmailVerificationResponse{Message: "successfully verified email"}
 	return response, nil
 }

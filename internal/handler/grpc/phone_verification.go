@@ -1,4 +1,4 @@
-package grpcHandler
+package grpc
 
 import (
 	"context"
@@ -91,14 +91,18 @@ func (s *Server) VerifyPhone(ctx context.Context, request *proto.PhoneVerificati
 	isPhoneVerified := true
 	isActive := true
 
-	userPatch := model.UserPatch{
+	updates := &model.User{}
+	userPatch := &model.UserPatch{
 		IsPhoneVerified: &isPhoneVerified,
 		IsActive:        &isActive,
 	}
 
-	user.Patch(&userPatch)
+	if err := updates.Patch(userPatch); err != nil {
+		s.logger.Error("failed to update user", err)
+		return nil, status.Errorf(codes.Internal, "failed to update user")
+	}
 
-	err = s.Repository.UpdateUser(ctx, user.Id, user)
+	err = s.Repository.UpdateUser(ctx, user.Id, updates)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to update user", err)
 	}

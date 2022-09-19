@@ -1,4 +1,4 @@
-package grpcHandler
+package grpc
 
 import (
 	"context"
@@ -117,20 +117,34 @@ func (s *Server) SetNewPassword(ctx context.Context, request *proto.SetNewPasswo
 		return nil, status.Errorf(codes.InvalidArgument, "password is invalid", err)
 	}
 
+	var user *model.User
+
 	if err := model.IsValidEmail(email); err == nil {
 
-		user, err := s.Repository.FindUserByEmail(ctx, email)
+		user, err = s.Repository.FindUserByEmail(ctx, email)
 		if err != nil {
 			return nil, status.Errorf(codes.NotFound, "user with this email does not exist!")
 		}
 
+		fmt.Println(newPassword)
+		// userPatch := &model.UserPatch{
+		// 	Password: &newPassword,
+		// }
+
+		// user.Patch(userPatch)
+		// user.Password = newPassword
+
+		updates := &model.User{}
 		userPatch := &model.UserPatch{
 			Password: &newPassword,
 		}
 
-		user.Patch(userPatch)
+		if err := updates.Patch(userPatch); err != nil {
+			s.logger.Error("failed to update user", err)
+			return nil, status.Errorf(codes.Internal, "failed to update user")
+		}
 
-		err = s.Repository.UpdateUser(ctx, user.Id, user)
+		err = s.Repository.UpdateUser(ctx, user.Id, updates)
 		if err != nil {
 			s.logger.Error("couldn't update user's password", err)
 			return nil, status.Errorf(codes.Internal, "couldn't update user's password: %v", err)

@@ -9,7 +9,7 @@ migration_name?=
 version?=
 
 
-.PHONY: migrateup
+.PHONY: create_migrate
 create_migrate: 
 	migrate create -ext sql -dir internal/db/migration -seq $(migration_name)
 
@@ -36,7 +36,7 @@ test:
 	go test -v -cover ./...
 
 # .PHONY: test-coverage
-test-coverage: |
-  go test -v ./... -covermode=count -coverpkg=./... -coverprofile coverage/coverage.out 
-  go tool cover -html coverage/coverage.out -o coverage/coverage.html 
-  open coverage/coverage.html 
+# test-coverage: 
+#   go test -v ./... -covermode=count -coverpkg=./... -coverprofile coverage/coverage.out 
+#   go tool cover -html coverage/coverage.out -o coverage/coverage.html 
+#   open coverage/coverage.html 
