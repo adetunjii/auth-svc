@@ -43,7 +43,7 @@ func (s *Server) Login(ctx context.Context, request *proto.LoginRequest) (*proto
 	}
 
 	if err := model.ComparePassword(user.Password, password); err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, ErrInvalidPhoneCode.Error())
+		return nil, status.Errorf(codes.InvalidArgument, ErrInvalidCredentials.Error())
 	}
 
 	isEmailVerified := user.IsEmailVerified
@@ -181,7 +181,7 @@ func (s *Server) LoginNoVerification(ctx context.Context, request *proto.LoginRe
 	token, err := s.jwtFactory.CreateToken(ui, exp)
 	if err != nil {
 		s.logger.Error("failed to create token", err)
-		return nil, status.Errorf(codes.Internal, "failed to create token", err)
+		return nil, status.Errorf(codes.Internal, "failed to create token")
 	}
 
 	userInfo := &proto.User{
@@ -282,7 +282,7 @@ func (s *Server) LoginWithGoogle(ctx context.Context, request *proto.LoginWithGo
 	token, err := s.jwtFactory.CreateToken(ui, exp)
 	if err != nil {
 		s.logger.Error("failed to create token", err)
-		return nil, status.Errorf(codes.Internal, "failed to create token", err)
+		return nil, status.Errorf(codes.Internal, "failed to create token")
 	}
 
 	isVerified := user.IsEmailVerified && user.IsPhoneVerified
@@ -397,7 +397,7 @@ func (s *Server) VerifyLogin(ctx context.Context, req *proto.VerifyLoginRequest)
 	token, err := s.jwtFactory.CreateToken(ui, exp)
 	if err != nil {
 		s.logger.Error("failed to create token", err)
-		return nil, status.Errorf(codes.Internal, "failed to create token", err)
+		return nil, status.Errorf(codes.Internal, "failed to create token")
 	}
 
 	// activities := &models.Activities{

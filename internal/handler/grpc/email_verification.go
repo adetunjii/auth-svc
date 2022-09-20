@@ -18,7 +18,7 @@ func (s *Server) InitEmailVerification(ctx context.Context, request *proto.InitE
 
 	user, err := s.Repository.FindUserByEmail(ctx, email)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "user does not exis", err)
+		return nil, status.Errorf(codes.InvalidArgument, "user does not exist", err)
 	}
 
 	if user.IsEmailVerified {

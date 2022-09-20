@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/jackc/pgconn"
 	"gitlab.com/dh-backend/auth-service/internal/model"
 	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
 	"google.golang.org/grpc/codes"
@@ -46,7 +47,10 @@ func (s *Server) Register(ctx context.Context, request *proto.RegisterRequest) (
 
 	err := s.Repository.CreateUser(ctx, u)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid parameters", err)
+		if dbErr := err.(*pgconn.PgError); dbErr != nil && dbErr.Code == "23505" {
+			return nil, status.Errorf(codes.InvalidArgument, "email already exists")
+		}
+		return nil, status.Errorf(codes.InvalidArgument, "invalid parameters")
 	}
 
 	registerResponse := &proto.RegisterResponse{
