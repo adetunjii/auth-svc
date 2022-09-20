@@ -38,7 +38,7 @@ func (j *JwtFactory) CreateToken(userInfo map[string]interface{}, duration time.
 
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
 
-	return jwtToken.SignedString([]byte(j.SecretKey))
+	return jwtToken.SignedString([]byte("secretkey"))
 }
 
 func (j *JwtFactory) VerifyToken(token string) (*Payload, error) {
@@ -48,7 +48,7 @@ func (j *JwtFactory) VerifyToken(token string) (*Payload, error) {
 		if !ok {
 			return nil, ErrInvalidToken
 		}
-		return []byte(j.SecretKey), nil
+		return []byte("secretkey"), nil
 	}
 
 	jwtToken, err := jwt.ParseWithClaims(token, &Payload{}, keyFunc)
