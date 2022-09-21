@@ -262,10 +262,6 @@ func (s *Server) LoginWithGoogle(ctx context.Context, request *proto.LoginWithGo
 		return nil, status.Errorf(codes.Unauthenticated, "failed to authenticate user.")
 	}
 
-	if !user.IsActive {
-		return nil, status.Error(codes.Unauthenticated, "user's account is inactive. Please reach out to customer support!")
-	}
-
 	exp := time.Hour * 24
 	ui := map[string]interface{}{
 		"id":                user.Id,
