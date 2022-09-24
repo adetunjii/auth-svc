@@ -25,17 +25,18 @@ type Server struct {
 	jwtFactory   *util.JwtFactory
 	googleClient *oauth.GoogleClient
 	logger       port.AppLogger
+	store        port.Store
 
 	proto.UnimplementedAuthServiceServer
 }
 
 func New(service *config.Service, logger port.AppLogger) *Server {
 	return &Server{
-		Repository:   service.Repository,
 		Redis:        service.Redis,
 		RabbitMQ:     service.RabbitMQ,
 		googleClient: service.GoogleClient,
 		logger:       logger,
+		store:        service.Store,
 	}
 }
 

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/jackc/pgconn"
+	"gitlab.com/dh-backend/auth-service/internal/model"
 	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,7 +18,11 @@ func (s *Server) CreateRole(ctx context.Context, request *proto.CreateRoleReques
 		return nil, status.Error(codes.InvalidArgument, "role title cannot be empty")
 	}
 
-	if err := s.Repository.CreateRole(ctx, role); err != nil {
+	arg := &model.Role{
+		Title: role,
+	}
+
+	if err := s.store.Role().Create(ctx, arg); err != nil {
 
 		if dbErr, ok := err.(*pgconn.PgError); ok && dbErr.Code == "23505" {
 			return nil, status.Error(codes.InvalidArgument, "role already exists")
@@ -36,7 +41,7 @@ func (s *Server) CreateRole(ctx context.Context, request *proto.CreateRoleReques
 
 func (s *Server) GetAllRoles(ctx context.Context, request *proto.GetAllRolesRequest) (*proto.GetAllRolesResponse, error) {
 
-	roles, err := s.Repository.ListRoles(ctx)
+	roles, err := s.store.Role().List(ctx, nil, 1, 20)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to return roles")
 	}
@@ -64,7 +69,7 @@ func (s *Server) GetAllRoles(ctx context.Context, request *proto.GetAllRolesRequ
 func (s *Server) DeleteRole(ctx context.Context, request *proto.DeleteRoleRequest) (*proto.DeleteRoleResponse, error) {
 	roleId := request.GetRoleId()
 
-	if err := s.Repository.DeleteRole(ctx, roleId); err != nil {
+	if err := s.store.Role().Delete(ctx, roleId); err != nil {
 		return nil, status.Error(codes.Internal, "failed to delete role")
 	}
 

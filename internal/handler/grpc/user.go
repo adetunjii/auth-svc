@@ -23,7 +23,7 @@ func (s *Server) UpdateUserInformation(ctx context.Context, request *proto.Updat
 		State:     &state,
 	}
 
-	user, err := s.Repository.FindUserById(ctx, userId)
+	user, err := s.store.User().FindById(ctx, userId)
 	if err != nil {
 		s.logger.Error("user not found with err: ", err)
 		return nil, status.Errorf(codes.InvalidArgument, "user not found")
@@ -34,13 +34,16 @@ func (s *Server) UpdateUserInformation(ctx context.Context, request *proto.Updat
 		return nil, status.Error(codes.Internal, "failed to update user")
 	}
 
-	if err := s.Repository.UpdateUser(ctx, userId, user); err != nil {
+	if err := s.store.User().Update(ctx, userId, user); err != nil {
 		s.logger.Error("failed to update user with err: ", err)
 		return nil, status.Error(codes.Internal, "failed to update user")
 	}
 
 	// fetch updated user
-	updatedUser, err := s.Repository.FindUserById(ctx, userId)
+	updatedUser, err := s.store.User().FindById(ctx, userId)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "user not found")
+	}
 	protoUserResponse := &proto.User{
 		FirstName: updatedUser.FirstName,
 		LastName:  updatedUser.LastName,

@@ -10,6 +10,7 @@ import (
 	"gitlab.com/dh-backend/auth-service/internal/services/oauth"
 	"gitlab.com/dh-backend/auth-service/internal/services/rabbitmq"
 	"gitlab.com/dh-backend/auth-service/internal/services/redis"
+	"gitlab.com/dh-backend/auth-service/internal/store/sqlstore"
 	"gitlab.com/dh-backend/auth-service/internal/util"
 )
 
@@ -41,6 +42,7 @@ type Service struct {
 	Redis        *redis.Redis
 	JwtFactory   *util.JwtFactory
 	GoogleClient *oauth.GoogleClient
+	Store        port.Store
 }
 
 func LoadConfig(logger port.AppLogger) *Service {
@@ -106,6 +108,9 @@ func LoadConfig(logger port.AppLogger) *Service {
 
 	googleClient := oauth.NewGoogleClient(config.GoogleClientId, config.GoogleClientSecret, config.GoogleUserScopes, config.GoogleRedirectURL, logger)
 	services.GoogleClient = googleClient
+
+	sqlStore := sqlstore.NewSqlStore(db, logger)
+	services.Store = sqlStore
 
 	return services
 

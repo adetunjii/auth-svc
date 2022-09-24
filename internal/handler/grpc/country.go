@@ -10,7 +10,7 @@ import (
 )
 
 func (s *Server) GetAllCountries(ctx context.Context, req *proto.GetAllCountryRequest) (*proto.GetAllCountryResponse, error) {
-	countries, err := s.Repository.ListCountries(ctx)
+	countries, err := s.store.Country().List(ctx)
 	if err != nil {
 		s.logger.Error("cannot fetch countries", err)
 		return nil, status.Errorf(codes.NotFound, "cannot fetch countries")

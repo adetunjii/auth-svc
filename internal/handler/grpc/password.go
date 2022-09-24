@@ -21,7 +21,7 @@ func (s *Server) ResetPassword(ctx context.Context, request *proto.ResetPassword
 		return nil, status.Errorf(codes.InvalidArgument, "invalid email format", err)
 	}
 
-	user, err := s.Repository.FindUserByEmail(ctx, email)
+	user, err := s.store.User().FindByEmail(ctx, email)
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "invalid credentials", err)
 	}
@@ -87,7 +87,7 @@ func (s *Server) VerifyPasswordReset(ctx context.Context, request *proto.VerifyP
 
 	if err := model.IsValidEmail(email); err == nil {
 
-		_, err = s.Repository.FindUserByEmail(ctx, email)
+		_, err = s.store.User().FindByEmail(ctx, email)
 		if err != nil {
 			return nil, status.Errorf(codes.NotFound, "invalid credentials", err)
 		}
@@ -121,7 +121,7 @@ func (s *Server) SetNewPassword(ctx context.Context, request *proto.SetNewPasswo
 
 	if err := model.IsValidEmail(email); err == nil {
 
-		user, err = s.Repository.FindUserByEmail(ctx, email)
+		user, err = s.store.User().FindByEmail(ctx, email)
 		if err != nil {
 			return nil, status.Errorf(codes.NotFound, "user with this email does not exist!")
 		}
@@ -144,7 +144,7 @@ func (s *Server) SetNewPassword(ctx context.Context, request *proto.SetNewPasswo
 			return nil, status.Errorf(codes.Internal, "failed to update user")
 		}
 
-		err = s.Repository.UpdateUser(ctx, user.Id, updates)
+		err = s.store.User().Update(ctx, user.Id, updates)
 		if err != nil {
 			s.logger.Error("couldn't update user's password", err)
 			return nil, status.Errorf(codes.Internal, "couldn't update user's password: %v", err)

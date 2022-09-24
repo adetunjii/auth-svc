@@ -13,13 +13,13 @@ func (r *Repository) AssignPermissionToRole(ctx context.Context, roleId string, 
 
 func (r *Repository) FindPermissionsByRoleId(ctx context.Context, roleId string) ([]*model.RolePermission, error) {
 	rp := []*model.RolePermission{}
-	conditions := map[string]interface{}{
-		"role_id": roleId,
-	}
-	err := r.db.FindWithPreload(rp, conditions, "Permission")
-	if err != nil {
-		return nil, err
-	}
+	// conditions := map[string]interface{}{
+	// 	"role_id": roleId,
+	// }
+	// err := r.db.FindWithPreload(rp, conditions, "Permission")
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return rp, nil
 }

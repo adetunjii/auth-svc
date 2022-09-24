@@ -21,7 +21,7 @@ func (s *Server) InitPhoneVerification(ctx context.Context, request *proto.InitP
 		return nil, status.Errorf(codes.InvalidArgument, "invalid otp type")
 	}
 
-	user, err := s.Repository.FindUserByPhoneNumber(ctx, phone, phoneCode)
+	user, err := s.store.User().FindByPhoneNumber(ctx, phone, phoneCode)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid credentials", err)
 	}
@@ -31,6 +31,7 @@ func (s *Server) InitPhoneVerification(ctx context.Context, request *proto.InitP
 	}
 
 	randomOtp := strconv.Itoa(util.RandomOtp())
+
 	requestId, err := uuid.NewRandom()
 	if err != nil {
 		s.logger.Error("failed to create requestId for Phone Verification", err)
@@ -83,7 +84,7 @@ func (s *Server) VerifyPhone(ctx context.Context, request *proto.PhoneVerificati
 		return nil, status.Errorf(codes.InvalidArgument, "Invalid phone number/phone code")
 	}
 
-	user, err := s.Repository.FindUserByPhoneNumber(ctx, phone, phoneCode)
+	user, err := s.store.User().FindByPhoneNumber(ctx, phone, phoneCode)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "verification failed!! Invalid Email")
 	}
@@ -102,7 +103,7 @@ func (s *Server) VerifyPhone(ctx context.Context, request *proto.PhoneVerificati
 		return nil, status.Errorf(codes.Internal, "failed to update user")
 	}
 
-	err = s.Repository.UpdateUser(ctx, user.Id, updates)
+	err = s.store.User().Update(ctx, user.Id, updates)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to update user", err)
 	}

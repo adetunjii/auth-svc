@@ -45,10 +45,10 @@ func (s *Server) Register(ctx context.Context, request *proto.RegisterRequest) (
 
 	}
 
-	err := s.Repository.CreateUser(ctx, u)
+	err := s.store.User().Save(ctx, u)
 	if err != nil {
 		if dbErr := err.(*pgconn.PgError); dbErr != nil && dbErr.Code == "23505" {
-			return nil, status.Errorf(codes.InvalidArgument, "email already exists")
+			return nil, status.Errorf(codes.InvalidArgument, "user with email / phone number already exists")
 		}
 		return nil, status.Errorf(codes.InvalidArgument, "invalid parameters")
 	}

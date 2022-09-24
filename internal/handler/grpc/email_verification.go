@@ -16,7 +16,7 @@ func (s *Server) InitEmailVerification(ctx context.Context, request *proto.InitE
 	email := request.GetEmail()
 	otpType := request.GetType()
 
-	user, err := s.Repository.FindUserByEmail(ctx, email)
+	user, err := s.store.User().FindByEmail(ctx, email)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "user does not exist", err)
 	}
@@ -80,7 +80,7 @@ func (s *Server) VerifyEmail(ctx context.Context, request *proto.EmailVerificati
 		return nil, status.Errorf(codes.InvalidArgument, "verification failed!! Invalid Email")
 	}
 
-	user, err := s.Repository.FindUserByEmail(ctx, email)
+	user, err := s.store.User().FindByEmail(ctx, email)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "verification failed!! Invalid Email")
 	}
@@ -97,7 +97,7 @@ func (s *Server) VerifyEmail(ctx context.Context, request *proto.EmailVerificati
 		return nil, status.Errorf(codes.Internal, "failed to update user")
 	}
 
-	s.Repository.UpdateUser(ctx, user.Id, updates)
+	s.store.User().Update(ctx, user.Id, updates)
 	response := &proto.EmailVerificationResponse{Message: "successfully verified email"}
 	return response, nil
 }

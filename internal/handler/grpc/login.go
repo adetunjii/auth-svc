@@ -141,7 +141,7 @@ func (s *Server) LoginNoVerification(ctx context.Context, request *proto.LoginRe
 	var user *model.User
 
 	if err := model.IsValidEmail(login); err == nil {
-		user, err = s.Repository.FindUserByEmail(ctx, login)
+		user, err = s.store.User().FindByEmail(ctx, login)
 		if err != nil {
 			return nil, status.Errorf(codes.NotFound, ErrInvalidCredentials.Error())
 		}
@@ -152,7 +152,7 @@ func (s *Server) LoginNoVerification(ctx context.Context, request *proto.LoginRe
 		}
 		phoneNumber := model.TrimPhoneNumber(login, phoneCode)
 
-		user, err = s.Repository.FindUserByPhoneNumber(ctx, phoneNumber, phoneCode)
+		user, err = s.store.User().FindByPhoneNumber(ctx, phoneNumber, phoneCode)
 
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, ErrInvalidCredentials.Error())
@@ -227,7 +227,7 @@ func (s *Server) LoginWithGoogle(ctx context.Context, request *proto.LoginWithGo
 
 	email := userDetails["email"].(string)
 
-	user, err := s.Repository.FindUserByEmail(context.Background(), email)
+	user, err := s.store.User().FindByEmail(context.Background(), email)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 
@@ -309,7 +309,7 @@ func (s *Server) fetchUserWithEmailOrPhone(login string, args ...string) (*model
 	user := &model.User{}
 
 	if err := model.IsValidEmail(login); err == nil {
-		user, err = s.Repository.FindUserByEmail(context.Background(), login)
+		user, err = s.store.User().FindByEmail(context.Background(), login)
 		if err != nil {
 			return nil, ErrInvalidCredentials
 		}
@@ -323,7 +323,7 @@ func (s *Server) fetchUserWithEmailOrPhone(login string, args ...string) (*model
 
 		phoneNumber := model.TrimPhoneNumber(login, phoneCode)
 
-		user, err = s.Repository.FindUserByPhoneNumber(context.Background(), phoneNumber, phoneCode)
+		user, err = s.store.User().FindByPhoneNumber(context.Background(), phoneNumber, phoneCode)
 		if err != nil {
 			return nil, ErrInvalidCredentials
 		}
@@ -356,7 +356,7 @@ func (s *Server) VerifyLogin(ctx context.Context, req *proto.VerifyLoginRequest)
 			return nil, status.Errorf(codes.InvalidArgument, "invalid email")
 		}
 
-		user, err = s.Repository.FindUserByEmail(ctx, login)
+		user, err = s.store.User().FindByEmail(ctx, login)
 		if err != nil {
 			return nil, status.Errorf(codes.NotFound, "user with this email does not exist!")
 		}
@@ -370,7 +370,7 @@ func (s *Server) VerifyLogin(ctx context.Context, req *proto.VerifyLoginRequest)
 
 		phone := model.TrimPhoneNumber(login, phoneCode)
 
-		user, err = s.Repository.FindUserByPhoneNumber(ctx, phone, phoneCode)
+		user, err = s.store.User().FindByPhoneNumber(ctx, phone, phoneCode)
 		if err != nil {
 			return nil, status.Errorf(codes.NotFound, "user with this phone number does not exist!")
 		}
