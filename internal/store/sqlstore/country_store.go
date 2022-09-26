@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strings"
 
-	"gitlab.com/dh-backend/auth-service/internal/model"
+	"github.com/adetunjii/auth-svc/internal/model"
 	"gorm.io/gorm"
 )
 

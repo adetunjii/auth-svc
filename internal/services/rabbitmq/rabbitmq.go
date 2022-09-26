@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/adetunjii/auth-svc/internal/port"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"gitlab.com/dh-backend/auth-service/internal/port"
 )
 
 type Connection struct {

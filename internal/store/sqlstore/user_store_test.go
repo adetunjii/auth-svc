@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/adetunjii/auth-svc/internal/model"
+	"github.com/adetunjii/auth-svc/internal/util"
 	"github.com/stretchr/testify/require"
-	"gitlab.com/dh-backend/auth-service/internal/model"
-	"gitlab.com/dh-backend/auth-service/internal/util"
 )
 
 func createTestAccount(t *testing.T) *model.User {

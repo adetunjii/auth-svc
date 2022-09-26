@@ -3,7 +3,7 @@ package port
 import (
 	"context"
 
-	"gitlab.com/dh-backend/auth-service/internal/model"
+	"github.com/adetunjii/auth-svc/internal/model"
 )
 
 type Store interface {
@@ -36,6 +36,7 @@ type RoleStore interface {
 type PermissionStore interface {
 	Create(ctx context.Context, arg *model.Permission) error
 	AssignToRole(ctx context.Context, permissionId string, roleId string) error
+	List(ctx context.Context, conds map[string]interface{}, page int, size int) ([]*model.Permission, error)
 	FindById(ctx context.Context, id string) (*model.Permission, error)
 	FindByRoleId(ctx context.Context, roleId string) ([]model.Permission, error)
 	RemoveFromRole(ctx context.Context, permissionId string, roleId string) error

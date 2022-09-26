@@ -4,9 +4,9 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/adetunjii/auth-svc/internal/model"
+	"github.com/adetunjii/auth-svc/internal/util"
 	"github.com/google/uuid"
-	"gitlab.com/dh-backend/auth-service/internal/model"
-	"gitlab.com/dh-backend/auth-service/internal/util"
 	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

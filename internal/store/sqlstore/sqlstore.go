@@ -1,6 +1,6 @@
 package sqlstore
 
-import "gitlab.com/dh-backend/auth-service/internal/port"
+import "github.com/adetunjii/auth-svc/internal/port"
 
 type Stores struct {
 	user       port.UserStore

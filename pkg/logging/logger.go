@@ -1,6 +1,6 @@
 package logging
 
-import "gitlab.com/dh-backend/auth-service/internal/port"
+import "github.com/adetunjii/auth-svc/internal/port"
 
 type Logger struct {
 	instance SugarLogger

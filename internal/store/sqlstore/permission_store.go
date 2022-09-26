@@ -3,7 +3,7 @@ package sqlstore
 import (
 	"context"
 
-	"gitlab.com/dh-backend/auth-service/internal/model"
+	"github.com/adetunjii/auth-svc/internal/model"
 )
 
 type SqlPermissionStore struct {
@@ -16,6 +16,24 @@ func newPermisisonStore(sqlStore *SqlStore) *SqlPermissionStore {
 
 func (ps SqlPermissionStore) Create(ctx context.Context, arg *model.Permission) error {
 	return ps.db.Save(arg)
+}
+
+func (ps SqlPermissionStore) List(ctx context.Context, conditions map[string]interface{}, page int, size int) ([]*model.Permission, error) {
+
+	if page == 0 {
+		page = 1
+	}
+
+	if size == 0 {
+		size = 20
+	}
+
+	limit := size
+	offset := (page - 1) * size
+	dest := []*model.Permission{}
+
+	err := ps.db.List(&dest, conditions, limit, offset)
+	return dest, err
 }
 
 func (ps SqlPermissionStore) AssignToRole(ctx context.Context, permissionId string, roleId string) error {

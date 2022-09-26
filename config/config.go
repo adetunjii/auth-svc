@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.com/dh-backend/auth-service/internal/db"
-	"gitlab.com/dh-backend/auth-service/internal/port"
-	"gitlab.com/dh-backend/auth-service/internal/repository"
-	"gitlab.com/dh-backend/auth-service/internal/services/oauth"
-	"gitlab.com/dh-backend/auth-service/internal/services/rabbitmq"
-	"gitlab.com/dh-backend/auth-service/internal/services/redis"
-	"gitlab.com/dh-backend/auth-service/internal/store/sqlstore"
-	"gitlab.com/dh-backend/auth-service/internal/util"
+	"github.com/adetunjii/auth-svc/internal/db"
+	"github.com/adetunjii/auth-svc/internal/port"
+	"github.com/adetunjii/auth-svc/internal/services/oauth"
+	"github.com/adetunjii/auth-svc/internal/services/rabbitmq"
+	"github.com/adetunjii/auth-svc/internal/services/redis"
+	"github.com/adetunjii/auth-svc/internal/store/sqlstore"
+	"github.com/adetunjii/auth-svc/internal/util"
 )
 
 type Config struct {
@@ -37,7 +36,6 @@ type Config struct {
 }
 
 type Service struct {
-	Repository   *repository.Repository
 	RabbitMQ     *rabbitmq.Connection
 	Redis        *redis.Redis
 	JwtFactory   *util.JwtFactory
@@ -64,9 +62,6 @@ func LoadConfig(logger port.AppLogger) *Service {
 	}
 
 	db := db.New(dbConfig, logger)
-
-	repository := repository.New(db, logger)
-	services.Repository = repository
 
 	redisConfig := &redis.Config{
 		Host:     config.RedisHost,

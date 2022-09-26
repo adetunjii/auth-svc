@@ -4,9 +4,9 @@ import (
 	"os"
 	"testing"
 
-	"gitlab.com/dh-backend/auth-service/internal/db"
-	"gitlab.com/dh-backend/auth-service/internal/port"
-	"gitlab.com/dh-backend/auth-service/pkg/logging"
+	"github.com/adetunjii/auth-svc/internal/db"
+	"github.com/adetunjii/auth-svc/internal/port"
+	"github.com/adetunjii/auth-svc/pkg/logging"
 )
 
 var testDB *db.PostgresDB

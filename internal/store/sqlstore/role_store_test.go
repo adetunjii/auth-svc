@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/adetunjii/auth-svc/internal/model"
 	"github.com/jackc/pgconn"
 	"github.com/stretchr/testify/require"
-	"gitlab.com/dh-backend/auth-service/internal/model"
 )
 
 var testRole = &model.Role{

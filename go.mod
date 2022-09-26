@@ -1,4 +1,4 @@
-module gitlab.com/dh-backend/auth-service
+module github.com/adetunjii/auth-svc
 
 go 1.19
 

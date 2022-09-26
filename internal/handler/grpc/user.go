@@ -3,7 +3,7 @@ package grpc
 import (
 	"context"
 
-	"gitlab.com/dh-backend/auth-service/internal/model"
+	"github.com/adetunjii/auth-svc/internal/model"
 	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

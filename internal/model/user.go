@@ -8,8 +8,8 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/adetunjii/auth-svc/internal/util"
 	"github.com/google/uuid"
-	"gitlab.com/dh-backend/auth-service/internal/util"
 	"gorm.io/gorm"
 )
 

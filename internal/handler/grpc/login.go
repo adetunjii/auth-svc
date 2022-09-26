@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"strings"
 
-	"gitlab.com/dh-backend/auth-service/internal/model"
-	"gitlab.com/dh-backend/auth-service/internal/util"
+	"github.com/adetunjii/auth-svc/internal/model"
+	"github.com/adetunjii/auth-svc/internal/util"
 	"gorm.io/gorm"
 
 	"github.com/google/uuid"

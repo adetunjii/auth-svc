@@ -3,7 +3,7 @@ package db
 import (
 	"fmt"
 
-	"gitlab.com/dh-backend/auth-service/internal/port"
+	"github.com/adetunjii/auth-svc/internal/port"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

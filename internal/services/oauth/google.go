@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"gitlab.com/dh-backend/auth-service/internal/port"
+	"github.com/adetunjii/auth-svc/internal/port"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
