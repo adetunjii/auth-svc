@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/adetunjii/auth-svc/internal/port"
 	"github.com/go-redis/redis/v8"
-	"gitlab.com/dh-backend/auth-service/internal/port"
 )
 
 type Config struct {

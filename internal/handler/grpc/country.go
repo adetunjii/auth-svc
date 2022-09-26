@@ -1,9 +1,8 @@
-package grpcHandler
+package grpc
 
 import (
 	"context"
 	"encoding/json"
-	"log"
 
 	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
 	"google.golang.org/grpc/codes"
@@ -11,9 +10,9 @@ import (
 )
 
 func (s *Server) GetAllCountries(ctx context.Context, req *proto.GetAllCountryRequest) (*proto.GetAllCountryResponse, error) {
-	countries, err := s.Repository.ListCountries(ctx)
+	countries, err := s.store.Country().List(ctx)
 	if err != nil {
-		log.Println(err)
+		s.logger.Error("cannot fetch countries", err)
 		return nil, status.Errorf(codes.NotFound, "cannot fetch countries")
 	}
 
@@ -21,11 +20,13 @@ func (s *Server) GetAllCountries(ctx context.Context, req *proto.GetAllCountryRe
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "cannot fetch countries")
 	}
-	var c []*proto.Country
+
+	// unmarshalling into the proto's country struct
+	c := []*proto.Country{}
 
 	err = json.Unmarshal(j, &c)
 	if err != nil {
-		log.Println(err)
+		s.logger.Error("cannot unmarshal into country struct", err)
 		return nil, status.Errorf(codes.Internal, "cannot fetch countries")
 	}
 

@@ -1,4 +1,4 @@
-package grpcHandler
+package grpc
 
 import (
 	"fmt"
@@ -7,31 +7,36 @@ import (
 	"os"
 	"os/signal"
 
-	"gitlab.com/dh-backend/auth-service/internal/port"
-	"gitlab.com/dh-backend/auth-service/internal/services/rabbitmq"
-	"gitlab.com/dh-backend/auth-service/internal/services/redis"
-	"gitlab.com/dh-backend/auth-service/internal/util"
+	"github.com/adetunjii/auth-svc/config"
+	"github.com/adetunjii/auth-svc/internal/port"
+	"github.com/adetunjii/auth-svc/internal/services/oauth"
+	"github.com/adetunjii/auth-svc/internal/services/rabbitmq"
+	"github.com/adetunjii/auth-svc/internal/services/redis"
+	"github.com/adetunjii/auth-svc/internal/util"
 	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
 type Server struct {
-	Repository port.Repository
-	Redis      *redis.Redis
-	RabbitMQ   *rabbitmq.Connection
-	jwtFactory *util.JwtFactory
-	logger     port.AppLogger
+	Repository   port.Repository
+	Redis        *redis.Redis
+	RabbitMQ     *rabbitmq.Connection
+	jwtFactory   *util.JwtFactory
+	googleClient *oauth.GoogleClient
+	logger       port.AppLogger
+	store        port.Store
 
 	proto.UnimplementedAuthServiceServer
 }
 
-func New(repository port.Repository, redis *redis.Redis, rabbitmq *rabbitmq.Connection, jwtFactory *util.JwtFactory, logger port.AppLogger) *Server {
+func New(service *config.Service, logger port.AppLogger) *Server {
 	return &Server{
-		Repository: repository,
-		Redis:      redis,
-		RabbitMQ:   rabbitmq,
-		logger:     logger,
+		Redis:        service.Redis,
+		RabbitMQ:     service.RabbitMQ,
+		googleClient: service.GoogleClient,
+		logger:       logger,
+		store:        service.Store,
 	}
 }
 

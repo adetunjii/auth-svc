@@ -1,12 +1,12 @@
-package grpcHandler
+package grpc
 
 import (
 	"context"
 	"strconv"
 
+	"github.com/adetunjii/auth-svc/internal/model"
+	"github.com/adetunjii/auth-svc/internal/util"
 	"github.com/google/uuid"
-	"gitlab.com/dh-backend/auth-service/internal/model"
-	"gitlab.com/dh-backend/auth-service/internal/util"
 	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -16,9 +16,9 @@ func (s *Server) InitEmailVerification(ctx context.Context, request *proto.InitE
 	email := request.GetEmail()
 	otpType := request.GetType()
 
-	user, err := s.Repository.FindUserByEmail(ctx, email)
+	user, err := s.store.User().FindByEmail(ctx, email)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "user does not exis", err)
+		return nil, status.Errorf(codes.InvalidArgument, "user does not exist", err)
 	}
 
 	if user.IsEmailVerified {
@@ -80,20 +80,24 @@ func (s *Server) VerifyEmail(ctx context.Context, request *proto.EmailVerificati
 		return nil, status.Errorf(codes.InvalidArgument, "verification failed!! Invalid Email")
 	}
 
-	user, err := s.Repository.FindUserByEmail(ctx, email)
+	user, err := s.store.User().FindByEmail(ctx, email)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "verification failed!! Invalid Email")
 	}
 
 	isEmailVerified := true
 
-	userPatch := model.UserPatch{
+	updates := &model.User{}
+	userPatch := &model.UserPatch{
 		IsEmailVerified: &isEmailVerified,
 	}
 
-	user.Patch(&userPatch)
+	if err := updates.Patch(userPatch); err != nil {
+		s.logger.Error("failed to update user", err)
+		return nil, status.Errorf(codes.Internal, "failed to update user")
+	}
 
-	s.Repository.UpdateUser(ctx, user.Id, user)
+	s.store.User().Update(ctx, user.Id, updates)
 	response := &proto.EmailVerificationResponse{Message: "successfully verified email"}
 	return response, nil
 }

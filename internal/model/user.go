@@ -8,8 +8,8 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/adetunjii/auth-svc/internal/util"
 	"github.com/google/uuid"
-	"gitlab.com/dh-backend/auth-service/internal/util"
 	"gorm.io/gorm"
 )
 
@@ -56,6 +56,7 @@ type UserPatch struct {
 	Timezone        *string `json:"timezone"`
 }
 
+// TODO: validate country: check if user is from a supported country
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	u.Id = uuid.NewString()
 
@@ -80,6 +81,12 @@ func (u *User) BeforeCreate(tx *gorm.DB) (err error) {
 	u.Address = SanitizeUnicode(u.Address)
 	u.State = SanitizeUnicode(u.State)
 
+	u.Username = strings.ToLower(u.Username)
+	u.FirstName = strings.ToLower(u.FirstName)
+	u.LastName = strings.ToLower(u.LastName)
+	u.Address = strings.ToLower(u.Address)
+	u.State = strings.ToLower(u.State)
+	u.Address = strings.ToLower(u.Address)
 	u.Email = strings.ToLower(u.Email)
 
 	err = u.Validate()
@@ -116,6 +123,14 @@ func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
 	u.Address = SanitizeUnicode(u.Address)
 	u.State = SanitizeUnicode(u.State)
 
+	u.Username = strings.ToLower(u.Username)
+	u.FirstName = strings.ToLower(u.FirstName)
+	u.LastName = strings.ToLower(u.LastName)
+	u.Address = strings.ToLower(u.Address)
+	u.State = strings.ToLower(u.State)
+	u.Address = strings.ToLower(u.Address)
+	u.Email = strings.ToLower(u.Email)
+
 	if u.Password != "" {
 		u.Password, err = HashPassword(u.Password)
 		if err != nil {
@@ -128,9 +143,21 @@ func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
 	return
 }
 
+// func (u *User) AfterUpdate(tx *gorm.DB) (err error) {
+// 	fmt.Println(u.Id)
+// 	hashPassword, err := HashPassword(u.Password)
+// 	if err != nil {
+// 		return
+// 	}
+
+// 	tx.Model(&User{}).Where("id = ?", u.Id).Update("password", hashPassword)
+
+// 	return
+// }
+
 // remove the first zero for Nigerian numbers
 func TrimPhoneNumber(phoneNumber string, phoneCode string) string {
-	if phoneCode == "234" && phoneNumber[0] != byte('0') {
+	if phoneCode == "234" && phoneNumber[0] == '0' {
 		return phoneNumber[1:]
 	}
 	return phoneNumber
@@ -178,7 +205,7 @@ func (u *User) Validate() error {
 	return nil
 }
 
-func (u *User) Patch(patch *UserPatch) {
+func (u *User) Patch(patch *UserPatch) (err error) {
 	if patch.FirstName != nil {
 		u.FirstName = *patch.FirstName
 	}
@@ -192,7 +219,10 @@ func (u *User) Patch(patch *UserPatch) {
 	}
 
 	if patch.Password != nil {
-		u.Password = *patch.Password
+		u.Password, err = HashPassword(*patch.Password)
+		if err != nil {
+			return
+		}
 	}
 
 	if patch.IsEmailVerified != nil {
@@ -222,6 +252,8 @@ func (u *User) Patch(patch *UserPatch) {
 	if patch.Timezone != nil {
 		u.Timezone = *patch.Timezone
 	}
+
+	return
 }
 
 func IsPasswordValid(password string) error {

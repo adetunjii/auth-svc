@@ -3,7 +3,7 @@ package db
 import (
 	"fmt"
 
-	"gitlab.com/dh-backend/auth-service/internal/port"
+	"github.com/adetunjii/auth-svc/internal/port"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -23,6 +23,8 @@ type PostgresDB struct {
 }
 
 var _ port.DB = (*PostgresDB)(nil)
+
+type PreloadOption func(*gorm.DB)
 
 func New(dbConfig DBConfig, logger port.AppLogger) *PostgresDB {
 	db := &PostgresDB{
@@ -92,9 +94,19 @@ func (p *PostgresDB) List(dest interface{}, conditions map[string]interface{}, l
 	return err
 }
 
-func (p *PostgresDB) FindWithPreload(dest interface{}, conditions map[string]interface{}, with string) error {
-	err := p.instance.Preload(with).Where(conditions).Find(dest).Error
-	return err
+func (p *PostgresDB) FindWithPreload(dest interface{}, conditions map[string]interface{}, options ...func(*gorm.DB)) error {
+
+	tx := p.instance.Where(conditions).Find(dest)
+
+	for _, option := range options {
+		option(tx)
+	}
+
+	return tx.Error
+}
+
+func (p *PostgresDB) Raw(dest interface{}, query string, values ...interface{}) error {
+	return p.instance.Raw(query, values).Scan(dest).Error
 }
 
 func (p *PostgresDB) FindById(dest interface{}, id string) error {
@@ -113,6 +125,17 @@ func (p *PostgresDB) Delete(model interface{}, id string) error {
 	return p.instance.Where("id = ?", id).Delete(model).Error
 }
 
+func (p *PostgresDB) DeleteOne(model interface{}, condition map[string]interface{}) error {
+	return p.instance.Where(condition).Delete(model).Error
+}
+
 func (p *PostgresDB) Update(model interface{}, condition map[string]interface{}, updates interface{}) error {
 	return p.instance.Model(model).Where(condition).Updates(updates).Error
+}
+
+// a wrapper to add preload options to a query
+func WithPreload(option string) PreloadOption {
+	return func(tx *gorm.DB) {
+		tx.Preload(option)
+	}
 }

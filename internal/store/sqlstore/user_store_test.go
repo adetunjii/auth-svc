@@ -1,13 +1,13 @@
-package repository
+package sqlstore
 
 import (
 	"context"
 	"fmt"
 	"testing"
 
+	"github.com/adetunjii/auth-svc/internal/model"
+	"github.com/adetunjii/auth-svc/internal/util"
 	"github.com/stretchr/testify/require"
-	"gitlab.com/dh-backend/auth-service/internal/model"
-	"gitlab.com/dh-backend/auth-service/internal/util"
 )
 
 func createTestAccount(t *testing.T) *model.User {
@@ -23,20 +23,20 @@ func createTestAccount(t *testing.T) *model.User {
 		Country:     "Nigeria",
 	}
 
-	err := testRepo.CreateUser(context.Background(), user)
+	err := sqlStore.User().Save(context.Background(), user)
 	require.NoError(t, err)
 
 	return user
 }
 
-func TestCreateUser(t *testing.T) {
+func TestSave(t *testing.T) {
 	createTestAccount(t)
 }
 
 func TestFindUserById(t *testing.T) {
 	user := createTestAccount(t)
 
-	dbUser, err := testRepo.FindUserById(context.Background(), user.Id)
+	dbUser, err := sqlStore.User().FindById(context.Background(), user.Id)
 	require.NoError(t, err)
 
 	require.Equal(t, user.Id, dbUser.Id)
@@ -49,7 +49,7 @@ func TestFindUserById(t *testing.T) {
 	require.Equal(t, user.Address, dbUser.Address)
 	require.Equal(t, user.Country, dbUser.Country)
 
-	noUser, err := testRepo.FindUserById(context.Background(), util.RandomUUID())
+	noUser, err := sqlStore.User().FindById(context.Background(), util.RandomUUID())
 	require.Error(t, err)
 	require.Empty(t, noUser)
 }
@@ -57,7 +57,7 @@ func TestFindUserById(t *testing.T) {
 func TestUserByEmail(t *testing.T) {
 	user := createTestAccount(t)
 
-	dbUser, err := testRepo.FindUserByEmail(context.Background(), user.Email)
+	dbUser, err := sqlStore.User().FindByEmail(context.Background(), user.Email)
 	require.NoError(t, err)
 
 	require.Equal(t, user.Id, dbUser.Id)
@@ -71,7 +71,7 @@ func TestUserByEmail(t *testing.T) {
 	require.Equal(t, user.Country, dbUser.Country)
 
 	randomEmail := fmt.Sprintf("%s@example.com", util.RandomString(6))
-	noUser, err := testRepo.FindUserByEmail(context.Background(), randomEmail)
+	noUser, err := sqlStore.User().FindByEmail(context.Background(), randomEmail)
 	require.Error(t, err)
 	require.Empty(t, noUser)
 }
@@ -84,7 +84,7 @@ func TestListUsers(t *testing.T) {
 	page := 1
 	size := 5
 
-	users, err := testRepo.ListUsers(context.Background(), nil, page, size)
+	users, err := sqlStore.User().List(context.Background(), nil, page, size)
 	require.NoError(t, err)
 
 	require.Len(t, users, 5)
@@ -93,10 +93,10 @@ func TestListUsers(t *testing.T) {
 func TestDeleteUser(t *testing.T) {
 	user := createTestAccount(t)
 
-	err := testRepo.DeleteUser(context.Background(), user.Id)
+	err := sqlStore.User().Delete(context.Background(), user.Id)
 	require.NoError(t, err)
 
-	dbUser, err := testRepo.FindUserById(context.Background(), user.Id)
+	dbUser, err := sqlStore.User().FindById(context.Background(), user.Id)
 	require.Error(t, err)
 	require.Empty(t, dbUser)
 }
@@ -110,10 +110,10 @@ func TestUpdateUser(t *testing.T) {
 		Username:  "teej4y",
 	}
 
-	err := testRepo.UpdateUser(context.Background(), user.Id, updates)
+	err := sqlStore.User().Update(context.Background(), user.Id, updates)
 	require.NoError(t, err)
 
-	updatedUser, err := testRepo.FindUserById(context.Background(), user.Id)
+	updatedUser, err := sqlStore.User().FindById(context.Background(), user.Id)
 	require.NoError(t, err)
 
 	require.Equal(t, updates.FirstName, updatedUser.FirstName)
@@ -124,7 +124,7 @@ func TestUpdateUser(t *testing.T) {
 func TestFindUserByPhoneNumber(t *testing.T) {
 	user := createTestAccount(t)
 
-	u, err := testRepo.FindUserByPhoneNumber(context.Background(), user.PhoneNumber, user.PhoneCode)
+	u, err := sqlStore.User().FindByPhoneNumber(context.Background(), user.PhoneNumber, user.PhoneCode)
 	require.NoError(t, err)
 	require.NotEmpty(t, u)
 

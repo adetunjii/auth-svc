@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.com/dh-backend/auth-service/internal/model"
+	"github.com/adetunjii/auth-svc/internal/model"
 )
 
 func (r *Redis) SaveOTP(key string, otpType model.OtpType, value any) error {
@@ -52,4 +52,26 @@ func (r *Redis) GetOTP(key string, otpType model.OtpType) (*model.OtpVerificatio
 	// fmt.Println(del)
 
 	return response, nil
+}
+
+func (r *Redis) SaveNewOauthUser(oauthId string, email string) error {
+	redisKey := "OAUTH_REG/" + oauthId
+	return r.client.Set(context.Background(), redisKey, email, 10*time.Minute).Err()
+}
+
+func (r *Redis) GetNewOauthuser(oauthId string) (string, error) {
+	redisKey := "OAUTH_REG/" + oauthId
+	return r.client.Get(context.Background(), redisKey).Result()
+}
+
+func (r *Redis) SaveRoles(ctx context.Context, roles map[string]interface{}) error {
+	return r.client.Set(context.Background(), "roles", roles, 0).Err()
+}
+
+func (r *Redis) SavePermissions(ctx context.Context, permissions map[string]interface{}) error {
+	return r.client.Set(context.Background(), "permissions", permissions, 0).Err()
+}
+
+func (r *Redis) SaveUserRoles(ctx context.Context, userRoles map[string]interface{}) error {
+	return r.client.Set(context.Background(), "userRoles", userRoles, 0).Err()
 }

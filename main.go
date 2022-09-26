@@ -1,20 +1,16 @@
 package main
 
 import (
-	"encoding/base64"
 	"fmt"
 	"log"
 
+	"github.com/adetunjii/auth-svc/config"
+	grpchandler "github.com/adetunjii/auth-svc/internal/handler/grpc"
+	"github.com/adetunjii/auth-svc/pkg/logging"
 	"github.com/spf13/viper"
-	"gitlab.com/dh-backend/auth-service/config"
-	grpcHandler "gitlab.com/dh-backend/auth-service/internal/handler/grpc"
-	"gitlab.com/dh-backend/auth-service/pkg/logging"
 )
 
 func main() {
-
-	js := "UserJwtSecretKeyHasToBe32CharactersLong"
-	fmt.Println(base64.StdEncoding.EncodeToString([]byte(js)))
 
 	viper.AddConfigPath(".")
 	viper.SetConfigName("app")
@@ -37,6 +33,6 @@ func main() {
 	logger := logging.NewLogger(zapSugarLogger)
 	services := config.LoadConfig(logger)
 
-	grpcServer := grpcHandler.New(services.Repository, services.Redis, services.RabbitMQ, services.JwtFactory, logger)
+	grpcServer := grpchandler.New(services, logger)
 	grpcServer.Start(grpcPort)
 }

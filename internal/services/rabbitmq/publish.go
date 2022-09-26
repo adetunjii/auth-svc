@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/adetunjii/auth-svc/internal/model"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"gitlab.com/dh-backend/auth-service/internal/model"
 )
 
 func (c *Connection) Publish(queueName string, message model.Notification) error {

@@ -1,4 +1,4 @@
-package grpcHandler
+package grpc
 
 import (
 	"context"
@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/adetunjii/auth-svc/internal/model"
+	"github.com/adetunjii/auth-svc/internal/util"
 	"github.com/google/uuid"
-	"gitlab.com/dh-backend/auth-service/internal/model"
-	"gitlab.com/dh-backend/auth-service/internal/util"
 	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -21,7 +21,7 @@ func (s *Server) ResetPassword(ctx context.Context, request *proto.ResetPassword
 		return nil, status.Errorf(codes.InvalidArgument, "invalid email format", err)
 	}
 
-	user, err := s.Repository.FindUserByEmail(ctx, email)
+	user, err := s.store.User().FindByEmail(ctx, email)
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "invalid credentials", err)
 	}
@@ -87,7 +87,7 @@ func (s *Server) VerifyPasswordReset(ctx context.Context, request *proto.VerifyP
 
 	if err := model.IsValidEmail(email); err == nil {
 
-		_, err = s.Repository.FindUserByEmail(ctx, email)
+		_, err = s.store.User().FindByEmail(ctx, email)
 		if err != nil {
 			return nil, status.Errorf(codes.NotFound, "invalid credentials", err)
 		}
@@ -117,20 +117,34 @@ func (s *Server) SetNewPassword(ctx context.Context, request *proto.SetNewPasswo
 		return nil, status.Errorf(codes.InvalidArgument, "password is invalid", err)
 	}
 
+	var user *model.User
+
 	if err := model.IsValidEmail(email); err == nil {
 
-		user, err := s.Repository.FindUserByEmail(ctx, email)
+		user, err = s.store.User().FindByEmail(ctx, email)
 		if err != nil {
 			return nil, status.Errorf(codes.NotFound, "user with this email does not exist!")
 		}
 
+		fmt.Println(newPassword)
+		// userPatch := &model.UserPatch{
+		// 	Password: &newPassword,
+		// }
+
+		// user.Patch(userPatch)
+		// user.Password = newPassword
+
+		updates := &model.User{}
 		userPatch := &model.UserPatch{
 			Password: &newPassword,
 		}
 
-		user.Patch(userPatch)
+		if err := updates.Patch(userPatch); err != nil {
+			s.logger.Error("failed to update user", err)
+			return nil, status.Errorf(codes.Internal, "failed to update user")
+		}
 
-		err = s.Repository.UpdateUser(ctx, user.Id, user)
+		err = s.store.User().Update(ctx, user.Id, updates)
 		if err != nil {
 			s.logger.Error("couldn't update user's password", err)
 			return nil, status.Errorf(codes.Internal, "couldn't update user's password: %v", err)

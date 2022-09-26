@@ -1,9 +1,11 @@
-package grpcHandler
+package grpc
 
 import (
 	"context"
+	"errors"
 
-	"gitlab.com/dh-backend/auth-service/internal/model"
+	"github.com/adetunjii/auth-svc/internal/model"
+	"github.com/jackc/pgconn"
 	"gitlab.com/grpc-buffer/proto/go/pkg/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -25,13 +27,36 @@ func (s *Server) Register(ctx context.Context, request *proto.RegisterRequest) (
 		Country:     request.GetCountry(),
 	}
 
-	err := s.Repository.CreateUser(ctx, u)
+	oauthId := request.GetOauthId()
+
+	if oauthId != "" {
+		// fetch user's email from cache and compare to the one sent
+		email, err := s.Redis.GetNewOauthuser(oauthId)
+		if err != nil {
+			s.logger.Error("user registration failed with err: ", err)
+			return nil, status.Errorf(codes.Unauthenticated, "registration failed, Invalid oauth id")
+		}
+
+		if email != request.GetEmail() {
+			s.logger.Error("user registration failed with err: ", errors.New("emails do not match"))
+			return nil, status.Errorf(codes.Unauthenticated, "registration failed. Oauth user not found")
+		}
+		u.IsEmailVerified = true
+
+	}
+
+	err := s.store.User().Save(ctx, u)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid parameters", err)
+		if dbErr := err.(*pgconn.PgError); dbErr != nil && dbErr.Code == "23505" {
+			return nil, status.Errorf(codes.InvalidArgument, "user with email / phone number already exists")
+		}
+		return nil, status.Errorf(codes.InvalidArgument, "invalid parameters")
 	}
 
 	registerResponse := &proto.RegisterResponse{
-		Message: "Successfully registered user",
+		Message:         "Successfully registered user",
+		IsEmailVerified: convertToBooleanString(u.IsEmailVerified),
+		IsPhoneVerified: convertToBooleanString(u.IsPhoneVerified),
 	}
 
 	return registerResponse, nil

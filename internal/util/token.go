@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	InvalidTokenError = errors.New("jwt is invalid")
-	ExpiredJwtError   = errors.New("jwt has expired")
+	ErrInvalidToken = errors.New("jwt is invalid")
+	ErrExpiredJwt   = errors.New("jwt has expired")
 )
 
 const minSecretKeySize = 32
@@ -21,7 +21,6 @@ type JwtFactory struct {
 }
 
 func NewJwtFactory(secretKey string) (*JwtFactory, error) {
-	fmt.Println(secretKey)
 	if len(secretKey) < minSecretKeySize {
 		return nil, fmt.Errorf("invalid key size: must be at least %d characters", minSecretKeySize)
 	}
@@ -29,7 +28,7 @@ func NewJwtFactory(secretKey string) (*JwtFactory, error) {
 	return &JwtFactory{SecretKey: secretKey}, nil
 }
 
-// TODO: investigage why env jwt secretkey breaks the code
+// TODO: fix nil pointer dereference error
 func (j *JwtFactory) CreateToken(userInfo map[string]interface{}, duration time.Duration) (string, error) {
 	payload, err := NewPayload(userInfo, duration)
 
@@ -38,6 +37,7 @@ func (j *JwtFactory) CreateToken(userInfo map[string]interface{}, duration time.
 	}
 
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
+
 	return jwtToken.SignedString([]byte("secretkey"))
 }
 
@@ -46,23 +46,23 @@ func (j *JwtFactory) VerifyToken(token string) (*Payload, error) {
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
-			return nil, InvalidTokenError
+			return nil, ErrInvalidToken
 		}
-		return []byte(j.SecretKey), nil
+		return []byte("secretkey"), nil
 	}
 
 	jwtToken, err := jwt.ParseWithClaims(token, &Payload{}, keyFunc)
 	if err != nil {
 		validationError, ok := err.(*jwt.ValidationError)
-		if ok && errors.Is(validationError.Inner, ExpiredJwtError) {
-			return nil, ExpiredJwtError
+		if ok && errors.Is(validationError.Inner, ErrExpiredJwt) {
+			return nil, ErrExpiredJwt
 		}
-		return nil, InvalidTokenError
+		return nil, ErrInvalidToken
 	}
 
 	payload, ok := jwtToken.Claims.(*Payload)
 	if !ok {
-		return nil, InvalidTokenError
+		return nil, ErrInvalidToken
 	}
 	return payload, nil
 }
@@ -91,7 +91,7 @@ func NewPayload(userInfo map[string]interface{}, duration time.Duration) (payloa
 
 func (p *Payload) Valid() error {
 	if time.Now().After(p.ExpiredAt) {
-		return ExpiredJwtError
+		return ErrExpiredJwt
 	}
 	return nil
 }

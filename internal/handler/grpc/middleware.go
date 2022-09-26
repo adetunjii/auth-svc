@@ -1,10 +1,10 @@
-package grpcHandler
+package grpc
 
 import (
 	"context"
 	"log"
 
-	"gitlab.com/dh-backend/auth-service/internal/util"
+	"github.com/adetunjii/auth-svc/internal/util"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"

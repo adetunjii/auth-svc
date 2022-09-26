@@ -3,7 +3,7 @@ package port
 import (
 	"context"
 
-	"gitlab.com/dh-backend/auth-service/internal/model"
+	"github.com/adetunjii/auth-svc/internal/model"
 )
 
 type Repository interface {
@@ -14,8 +14,9 @@ type Repository interface {
 	FindUserByPhoneNumber(ctx context.Context, phoneNumber string, phoneCode string) (*model.User, error)
 	DeleteUser(ctx context.Context, id string) error
 	UpdateUser(ctx context.Context, id string, arg *model.User) error
-	CreateRole(ctx context.Context, arg *model.Role) error
+	CreateRole(ctx context.Context, title string) error
 	ListRoles(ctx context.Context) ([]*model.Role, error)
+	DeleteRole(ctx context.Context, id string) error
 	FindRoleById(ctx context.Context, id string) (*model.Role, error)
 	CreatePermission(ctx context.Context, arg *model.Permission) error
 	AssignPermissionToRole(ctx context.Context, roleId string, permissionId string) error

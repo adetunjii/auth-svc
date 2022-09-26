@@ -1,0 +1,124 @@
+image: golang:latest
+
+
+.go-cache:
+    variables:
+        GOPATH: $CI_PROJECT_DIR/.go
+    cache:
+      paths:
+        - .go/pkg/mod/
+
+
+variables:
+  KUBE_CONTEXT: dh-backend/dh-backend-user-sv:kube-agent
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  CS_DEFAULT_BRANCH_IMAGE: $CI_REGISTRY_IMAGE/$CI_COMMIT_BRANCH:$CI_COMMIT_SHA
+  ROLLOUT_RESOURCE_TYPE: deployment
+
+workflow:
+  rules:
+    - if: '$BUILDPACK_URL || $AUTO_DEVOPS_EXPLICITLY_ENABLED == "1" || $DOCKERFILE_PATH'
+    - exists:
+        - Dockerfile
+    
+stages:
+#    - lint
+    #- build
+    - build-push-docker
+    #- deploy-staging
+
+
+# lint:
+#   stage: lint
+#   # rules:
+#   #   - if: $CI_MERGE_REQUEST_ID
+#   image: golangci/golangci-lint:v1.46-alpine
+#   variables:
+#     GOPATH: $CI_PROJECT_DIR/.mygo
+#   script:
+#     - go generate ./...
+#     - golangci-lint version
+#     - echo "Linting new code relative to branch $CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+#     #- git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+#     - golangci-lint run --new-from-rev="remotes/origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" --out-format="junit-xml" > lint.xml
+#   allow_failure: true
+#   artifacts:
+#     reports:
+#       junit:
+#         - lint.xml
+
+
+# compile:
+#     stage: build
+#     extends: .go-cache
+#     script:
+#       - go mod tidy
+#       - cp app.env.example app.env
+#       - go build -race -o auth-sv
+#     artifacts:
+#       paths:
+#         - auth-sv
+
+
+# coverage:
+#   stage: test
+#   before_script:
+#     - echo "machine gitlab.widas.de login $GITLAB_LOGIN password $GITLAB_TOKEN" > ~/.netrc
+#   script:
+#     - go fmt $(go list ./... | grep -v /vendor/)
+#     - go vet $(go list ./... | grep -v /vendor/)
+#     - go test ./... -v -coverprofile .coverage.txt
+#     - go tool cover -func .coverage.txt
+#     - go tool cover -html=.coverage.txt -o coverage.html
+#   artifacts:
+#     paths:
+#       - coverage.html
+
+
+
+build-push-docker-image-job:
+  # Specify a Docker image to run the job in.
+  image: docker:stable
+  stage: build-push-docker
+  variables:
+        DOCKER_DRIVER: overlay2
+        DOCKER_BUILDKIT: 1
+  # Specify an additional image 'docker:dind' ("Docker-in-Docker") that
+  # will start up the Docker daemon when it is brought up by a runner.
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        tag=""
+        echo "Running on default branch '$CI_DEFAULT_BRANCH': tag = 'latest'"
+      else
+        tag=":$CI_COMMIT_REF_SLUG"
+        echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
+      fi
+    - docker build --pull -t "$CS_DEFAULT_BRANCH_IMAGE" .
+    - docker push "$CS_DEFAULT_BRANCH_IMAGE"
+
+
+# deploy:staging:
+#     image:
+#         name: bitnami/kubectl:latest
+#         entrypoint: ['']
+#     stage: deploy-staging
+#     variables:
+#         MANIFEST_PROJECT_ID: 30770380
+#         TARGET_ENVIRONMENT: development
+#         SERVICE: user-service
+#     #only:
+#     #    - master
+#     script:
+#         - kubectl config get-contexts
+#         - kubectl config use-context $KUBE_CONTEXT
+#         #- kubectl apply -f .manifests/overlays/dev/. -n $TARGET_ENVIRONMENT
+#         #- kubectl set image $ROLLOUT_RESOURCE_TYPE/$SERVICE $SERVICE=${CI_REGISTRY}/$CS_DEFAULT_BRANCH_IMAGE -n $TARGET_ENVIRONMENT
+#         #- kubectl apply -f .manifests/overlays/dev/. -n dh-dev
+#     environment:
+#         name: $TARGET_ENVIRONMENT
+
