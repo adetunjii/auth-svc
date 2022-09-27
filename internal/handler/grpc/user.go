@@ -57,3 +57,22 @@ func (s *Server) UpdateUserInformation(ctx context.Context, request *proto.Updat
 	}
 	return response, nil
 }
+
+func (s *Server) DeleteUser(ctx context.Context, request *proto.DeleteUserRequest) (*proto.DeleteUserResponse, error) {
+	userId := request.GetId()
+
+	_, err := s.store.User().FindById(ctx, userId)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "user does not exist")
+	}
+
+	if err := s.store.User().Delete(ctx, userId); err != nil {
+		s.logger.Error("failed to delete a user with err: ", err)
+		return nil, status.Error(codes.Internal, "failed to delete user")
+	}
+
+	response := &proto.DeleteUserResponse{
+		Message: "user deleted successfully",
+	}
+	return response, nil
+}
